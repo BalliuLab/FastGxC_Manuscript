@@ -1,0 +1,21 @@
+count	edge_id	connector	node	stage
+87586	1	from	single-context cxc	CxC
+87586	1	to	single-context fastgxc	FastGxC
+141264	3	from	50_perc_cxc	CxC
+141264	3	to	FastGxC_shared_only	FastGxC
+19204	4	from	50_perc_cxc	CxC
+19204	4	to	FastGxC_specific_only	FastGxC
+358668	5	from	50_perc_cxc	CxC
+358668	5	to	FastGxC_both	FastGxC
+22237	6	from	>50_perc_cxc	CxC
+22237	6	to	FastGxC_shared_only	FastGxC
+291	7	from	>50_perc_cxc	CxC
+291	7	to	FastGxC_specific_only	FastGxC
+127276	8	from	>50_perc_cxc	CxC
+127276	8	to	FastGxC_both	FastGxC
+176222	9	from	single-context cxc	CxC
+176222	9	to	FastGxC_shared_only	FastGxC
+11931	10	from	single-context cxc	CxC
+11931	10	to	FastGxC_specific_only	FastGxC
+133172	11	from	single-context cxc	CxC
+133172	11	to	FastGxC_both	FastGxC

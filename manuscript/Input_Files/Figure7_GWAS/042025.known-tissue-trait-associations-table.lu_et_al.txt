@@ -1,0 +1,293 @@
+trait	relevant_tissue
+alcohol consumption measurement	"Liver,Brain_Cortex"
+allergy	"Whole_Blood,Lung"
+"Alzheimer's disease, family history of Alzheimer’s disease"	"Brain_Hippocampus,Brain_Cortex"
+"schizophrenia, autism spectrum disorder"	Brain_Cortex
+body mass index	"Adipose_Subcutaneous,Adipose_Visceral_Omentum"
+total cholesterol measurement	Liver
+high density lipoprotein cholesterol measurement	Liver
+low density lipoprotein cholesterol measurement	Liver
+triglyceride measurement	Liver
+body fat distribution	"Adipose_Subcutaneous,Adipose_Visceral_Omentum"
+body fat percentage	"Adipose_Subcutaneous,Adipose_Visceral_Omentum"
+breast carcinoma	Breast_Mammary_Tissue
+C-reactive protein measurement	Liver
+leukocyte count	Whole_Blood
+hematocrit	Whole_Blood
+mean corpuscular volume	Whole_Blood
+mean corpuscular hemoglobin	Whole_Blood
+ulcerative colitis	"Colon_Sigmoid,Colon_Transverse"
+intelligence	Brain_Cortex
+Crohn's disease	"Small_Intestine_Terminal_Ileum,Colon_Transverse"
+"unipolar depression, mood disorder"	Brain_Cortex
+eosinophil count	Whole_Blood
+eosinophil percentage of granulocytes	Whole_Blood
+type II diabetes mellitus	"Pancreas,Adipose_Visceral_Omentum"
+granulocyte percentage of myeloid white cells	Whole_Blood
+"Eczema, allergic rhinitis"	"Skin_Sun_Exposed_Lower_leg,Lung"
+erythrocyte count	Whole_Blood
+red blood cell distribution width	Whole_Blood
+response to vaccine	"Whole_Blood,Spleen"
+interleukin-1 beta measurement	Whole_Blood
+inflammatory bowel disease	"Colon_Sigmoid,Small_Intestine_Terminal_Ileum"
+lung carcinoma	Lung
+schizophrenia	Brain_Cortex
+myeloid white cell count	Whole_Blood
+neuroticism measurement	Brain_Cortex
+neutrophil count	Whole_Blood
+Parkinson's disease	Brain_Substantia_nigra
+"forced expiratory volume, response to bronchodilator"	Lung
+pulse pressure measurement	"Artery_Aorta,Heart_Left_Ventricle"
+rheumatoid arthritis	Whole_Blood
+venous thromboembolism	Artery_Aorta
+BMI-adjusted waist circumference	Adipose_Visceral_Omentum
+BMI-adjusted waist-hip ratio	Adipose_Visceral_Omentum
+"anorexia nervosa, obsessive-compulsive disorder, attention deficit hyperactivity disorder, Tourette syndrome, unipolar depression"	Brain_Cortex
+coronary artery disease	Artery_Coronary
+drug dependence	Brain_Cortex
+lung adenocarcinoma	Lung
+age-related macular degeneration	Brain_Cortex
+risk-taking behaviour	Brain_Cortex
+"Duchenne muscular dystrophy, disease progression measurement"	Muscle_Skeletal
+serum alanine aminotransferase measurement	Liver
+alcoholic pancreatitis	Pancreas
+ankylosing spondylitis	Whole_Blood
+atopic eczema	Skin_Sun_Exposed_Lower_leg
+autoimmune disease	Whole_Blood
+lymphoma	"Whole_Blood,Spleen"
+Behcet's syndrome	Whole_Blood
+fibrinogen measurement	Liver
+uric acid measurement	Kidney_Cortex
+bipolar disorder	Brain_Cortex
+"schizophrenia, bipolar disorder"	Brain_Cortex
+birth weight	"Placenta (not in GTEx, use Whole_Blood as proxy)"
+sensory perception of bitter taste	Brain_Cortex
+multiple sclerosis	"Brain_Cortex,Whole_Blood"
+"total cholesterol measurement, C-reactive protein measurement"	Liver
+coffee consumption	"Liver,Brain_Cortex"
+cancer	Whole_Blood
+platelet count	Whole_Blood
+serum gamma-glutamyl transferase measurement	Liver
+cervical carcinoma	"Uterus,Cervix (not in GTEx, use Vagina)"
+chronic hepatitis B virus infection	Liver
+hepatitis B virus infection	Liver
+"ankylosing spondylitis, psoriasis, ulcerative colitis, Crohn's disease, sclerosing cholangitis"	"Whole_Blood,Colon_Sigmoid,Skin_Sun_Exposed_Lower_leg"
+periodontitis	Minor_Salivary_Gland
+circadian rhythm	Brain_Hypothalamus
+"large artery stroke, coronary heart disease"	"Artery_Aorta,Artery_Coronary"
+depressive symptom measurement	Brain_Cortex
+HbA1c measurement	"Pancreas,Whole_Blood"
+"diastolic blood pressure, alcohol drinking"	"Artery_Aorta,Liver"
+factor VIII measurement	Liver
+von Willebrand factor measurement	Liver
+eosinophil percentage of leukocytes	Whole_Blood
+Frontotemporal dementia	Brain_Frontal_Cortex_BA9
+type I diabetes mellitus	"Pancreas,Whole_Blood"
+glaucoma	Brain_Cortex
+open-angle glaucoma	Brain_Cortex
+granulocyte count	Whole_Blood
+Graves disease	Thyroid
+"alcohol drinking, high density lipoprotein cholesterol measurement"	Liver
+"alcohol consumption measurement, high density lipoprotein cholesterol measurement"	Liver
+"HDL cholesterol change measurement, physical activity"	"Liver,Muscle_Skeletal"
+"response to beta blocker, heart rate"	Heart_Left_Ventricle
+hemoglobin measurement	Whole_Blood
+lymphocyte count	Whole_Blood
+mean corpuscular hemoglobin concentration	Whole_Blood
+reticulocyte count	Whole_Blood
+mathematical ability	Brain_Cortex
+hip circumference	Adipose_Subcutaneous
+BMI-adjusted hip circumference	Adipose_Subcutaneous
+homocysteine measurement	Liver
+hypertension	"Artery_Aorta, Artery_Coronary, Heart_Left_Ventricle"
+Hypertriglyceridemia	Liver
+psoriasis	"Skin_Sun_Exposed_Lower_leg, Skin_Not_Sun_Exposed_Suprapubic"
+interleukin 18 measurement	"Whole_Blood, Spleen"
+"low density lipoprotein cholesterol measurement, alcohol drinking"	Liver
+"low density lipoprotein cholesterol measurement, alcohol consumption measurement"	Liver
+L lactate dehydrogenase measurement	"Liver, Muscle_Skeletal"
+leprosy	"Skin_Sun_Exposed_Lower_leg, Nerve_Tibial"
+"total cholesterol measurement, triglyceride measurement, low density lipoprotein cholesterol measurement, high density lipoprotein cholesterol measurement"	Liver
+lymphocyte percentage of leukocytes	"Whole_Blood, Spleen"
+"mean arterial pressure, alcohol drinking"	"Artery_Aorta, Heart_Left_Ventricle"
+mean platelet volume	Whole_Blood
+melanoma	"Skin_Sun_Exposed_Lower_leg, Skin_Not_Sun_Exposed_Suprapubic"
+metabolic syndrome	"Liver, Adipose_Visceral_Omentum"
+monocyte count	"Whole_Blood, Spleen"
+monocyte percentage of leukocytes	Whole_Blood
+multiple myeloma	Whole_Blood
+"multiple sclerosis, oligoclonal band measurement"	Whole_Blood
+narcolepsy with cataplexy	"Spleen, Whole_Blood"
+neutrophil percentage of granulocytes	Whole_Blood
+neutrophil percentage of leukocytes	Whole_Blood
+nodular sclerosis Hodgkin lymphoma	Spleen
+non-alcoholic fatty liver disease	Liver
+non-lobar intracerebral hemorrhage	Liver
+"birth weight, parental genotype effect measurement"	Liver
+"autoimmune thyroid disease, type I diabetes mellitus, Common variable immunodeficiency, ankylosing spondylitis, psoriasis, celiac disease"	"Adipose_Subcutaneous, Adipose_Visceral_Omentum"
+body weight	Liver
+eicosapentaenoic acid measurement	Liver
+docosapentaenoic acid measurement	Liver
+omega-6 polyunsaturated fatty acid measurement	Liver
+platelet component distribution width	Whole_Blood
+platelet crit	Whole_Blood
+biliary liver cirrhosis	Liver
+primary biliary cirrhosis	Liver
+protein C measurement	Whole_Blood
+psoriatic arthritis	"Skin_Sun_Exposed_Lower_leg, Muscle_Skeletal"
+"pulse pressure measurement, alcohol drinking"	"Artery_Aorta, Heart_Left_Ventricle"
+"pulse pressure measurement, alcohol consumption measurement"	"Artery_Aorta, Heart_Left_Ventricle"
+sitting height ratio	"Muscle_Skeletal, Bone"
+Sjogren syndrome	"Minor_Salivary_Gland, Spleen"
+smoking cessation	"Lung, Brain_Cortex"
+squamous cell lung carcinoma	Lung
+"unipolar depression, neuroticism measurement"	Brain_Cortex
+"neutrophil count, basophil count"	Whole_Blood
+"basophil count, eosinophil count"	Whole_Blood
+"neutrophil count, eosinophil count"	Whole_Blood
+systemic lupus erythematosus	"Spleen, Whole_Blood"
+"systemic scleroderma, systemic lupus erythematosus"	"Spleen, Whole_Blood"
+systemic scleroderma	Spleen
+"systolic blood pressure, alcohol drinking"	"Artery_Aorta, Heart_Left_Ventricle"
+"trans fatty acid measurement, trans/trans-18:2 fatty acid measurement"	Liver
+"cis/trans-18:2 fatty acid measurement, trans fatty acid measurement"	Liver
+"triglyceride measurement, alcohol drinking"	Liver
+"triglyceride measurement, alcohol consumption measurement"	Liver
+urate measurement	Whole_Blood
+Vitiligo	Skin_Sun_Exposed_Lower_leg
+"BMI-adjusted waist circumference, physical activity measurement"	Skin_Sun_Exposed_Lower_leg
+"smoking behavior, BMI-adjusted waist-hip ratio"	Skin_Sun_Exposed_Lower_leg
+"BMI-adjusted waist-hip ratio, sex interaction measurement, age at assessment"	Skin_Sun_Exposed_Lower_leg
+basophil count	Whole_Blood
+acute myeloid leukemia	Spleen
+age-related hearing impairment	Brain_Cortex
+response to antidepressant	Brain_Cortex
+atrial fibrillation	Heart_Left_Ventricle
+"attention deficit hyperactivity disorder, unipolar depression, schizophrenia, autism spectrum disorder, bipolar disorder"	Brain_Cortex
+"C-reactive protein measurement, high density lipoprotein cholesterol measurement"	Liver
+coronary heart disease	"Artery_Aorta, Heart_Left_Ventricle"
+QRS duration	Heart_Left_Ventricle
+Malignant epithelial tumor of ovary	Ovary
+insomnia measurement	Brain_Cortex
+mucocutaneous lymph node syndrome	Spleen
+alkaline phosphatase measurement	Liver
+waist circumference	Adipose_Visceral_Omentum
+"FEV change measurement, response to corticosteroid, asthma"	Lung
+Testicular Germ Cell Tumor	Testis
+Tourette syndrome	Brain_Cortex
+"BMI-adjusted waist-hip ratio, physical activity measurement"	Adipose_Visceral_Omentum
+"smoking behavior, body mass index"	Adipose_Visceral_Omentum
+gallstones	Liver
+squamous cell carcinoma	Skin_Sun_Exposed_Lower_leg
+Takayasu arteritis	Artery_Aorta
+unipolar depression	Brain_Cortex
+"free cholesterol measurement, very low density lipoprotein cholesterol measurement"	Liver
+very low density lipoprotein cholesterol measurement	Liver
+"very low density lipoprotein cholesterol measurement, phospholipid measurement"	Liver
+"triglyceride measurement, very low density lipoprotein cholesterol measurement"	Liver
+celiac disease	Small_Intestine_Terminal_Ileum
+PR interval	Heart_Left_Ventricle
+neuroblastoma	Spleen
+phosphatidylcholine measurement	Liver
+"response to aromatase inhibitor, estrogen-receptor positive breast cancer"	Breast_Mammary_Tissue
+"schizophrenia, response to paliperidone, schizophrenia symptom severity measurement"	Brain_Cortex
+resting heart rate	Heart_Left_Ventricle
+migraine disorder	Brain_Cortex
+autism	Brain_Cortex
+"coffee consumption, cups of coffee per day measurement"	Brain_Cortex
+gout	Whole_Blood
+psoriasis vulgaris	Skin_Sun_Exposed_Lower_leg
+"smoking behavior, BMI-adjusted waist circumference"	Skin_Sun_Exposed_Lower_leg
+"total cholesterol measurement, diastolic blood pressure, triglyceride measurement, systolic blood pressure, hematocrit, ventricular mass measurement"	Liver
+wet macular degeneration	Brain_Hippocampus
+allergic rhinitis	"Minor_Salivary_Gland, Whole_Blood"
+Alzheimer's disease	"Brain_Hippocampus, Brain_Cortex"
+attention deficit hyperactivity disorder	Brain_Cortex
+longitudinal BMI measurement	"Adipose_Visceral_Omentum, Adipose_Subcutaneous"
+basophil percentage of leukocytes	Whole_Blood
+heart rate	Heart_Left_Ventricle
+bipolar I disorder	Brain_Cortex
+body height at birth	Muscle_Skeletal
+"low density lipoprotein cholesterol measurement, C-reactive protein measurement"	"Liver, Whole_Blood"
+esterified cholesterol measurement	Liver
+chronotype measurement	Brain_Hypothalamus
+cups of coffee per day measurement	Brain_Cortex
+coffee consumption measurement	Brain_Cortex
+"stroke, coronary heart disease"	"Artery_Aorta, Heart_Left_Ventricle"
+creatine kinase measurement	"Muscle_Skeletal, Heart_Left_Ventricle"
+DNA methylation	Whole_Blood
+diverticular disease	"Colon_Sigmoid, Colon_Transverse"
+QT interval	Heart_Left_Ventricle
+coagulation factor measurement	Whole_Blood
+"response to lamotrigine, maculopapular eruption, epilepsy"	Brain_Cortex
+"hepatitis B virus infection, hepatocellular carcinoma"	Liver
+idiopathic dilated cardiomyopathy	Heart_Left_Ventricle
+idiopathic pulmonary fibrosis	Lung
+interleukin 1 receptor antagonist measurement	Whole_Blood
+"systemic juvenile idiopathic arthritis, polyarticular juvenile idiopathic arthritis, rheumatoid factor negative, oligoarticular juvenile arthritis"	"Whole_Blood, Spleen"
+"sleep duration, low density lipoprotein cholesterol measurement"	"Brain_Hypothalamus, Liver"
+"low density lipoprotein cholesterol measurement, physical activity"	"Liver, Muscle_Skeletal"
+sclerosing cholangitis	Liver
+"high density lipoprotein cholesterol measurement, metabolic syndrome"	"Liver, Adipose_Visceral_Omentum"
+"metastasis measurement, metastatic colorectal cancer, disease progression measurement"	Colon_Sigmoid
+"smoking behavior, nicotine metabolite ratio"	Lung
+"non-alcoholic fatty liver disease, cirrhosis of liver"	Liver
+prostate carcinoma	Prostate
+"schizophrenia, response to antipsychotic drug"	Brain_Cortex
+response to mTOR inhibitor	Whole_Blood
+nervousness	Brain_Cortex
+"systemic scleroderma, rheumatoid arthritis, myositis, systemic lupus erythematosus"	"Spleen, Whole_Blood"
+"sleep duration, triglyceride measurement"	"Brain_Hypothalamus, Liver"
+"autoimmune thyroid disease, type I diabetes mellitus"	"Adipose_Subcutaneous, Adipose_Visceral_Omentum"
+word reading	Brain_Cortex
+chronic lymphocytic leukemia	Whole_Blood
+opioid dependence	Brain_Cortex
+colorectal cancer	Colon_Sigmoid
+mental or behavioural disorder	Brain_Cortex
+keratinocyte carcinoma	Skin_Sun_Exposed_Lower_leg
+obesity	"Adipose_Visceral_Omentum, Adipose_Subcutaneous"
+amyotrophic lateral sclerosis	"Spinal_cord, Brain_Spinal_cord_cervical_c-1"
+neurotic disorder	Brain_Cortex
+"bipolar disorder, body mass index"	"Brain_Cortex, Adipose_Visceral_Omentum"
+"lung carcinoma, estrogen-receptor negative breast cancer, colorectal cancer, ovarian endometrioid carcinoma, prostate carcinoma, etc."	"Lung, Breast_Mammary_Tissue, Colon_Sigmoid, Prostate"
+eosinophilic esophagitis	Esophagus_Mucosa
+heart rate response to recovery post exercise	Heart_Left_Ventricle
+reading and spelling ability	Brain_Cortex
+albumin:globulin ratio measurement	Liver
+fatty acid measurement	Liver
+"dental caries, dentures"	"Teeth, Oral_Mucosa"
+testicular carcinoma	Testis
+"total cholesterol measurement, hematocrit, stroke, ventricular rate measurement, coronary heart disease, body mass index, atrial fibrillation"	"Liver, Artery_Aorta, Heart_Left_Ventricle"
+sporadic amyotrophic lateral sclerosis	"Spinal_cord, Brain_Spinal_cord_cervical_c-1"
+basal cell carcinoma	Skin_Sun_Exposed_Lower_leg
+"nevus count, cutaneous melanoma"	Skin_Sun_Exposed_Lower_leg
+"schizophrenia, heart rate variability measurement, response to antipsychotic drug"	"Brain_Cortex, Heart_Left_Ventricle"
+gastric carcinoma	Stomach
+smoking initiation	Lung
+"QRS amplitude, QRS complex"	Heart_Left_Ventricle
+aging	"Whole_Blood, Bone"
+Hodgkins lymphoma	Spleen
+Hirschsprung disease	Colon_Sigmoid
+lipoprotein A measurement	Liver
+"atrophic macular degeneration, age-related macular degeneration, wet macular degeneration"	Retina
+"physical activity measurement, body mass index"	"Muscle_Skeletal, Adipose_Visceral_Omentum"
+"triglyceride measurement, C-reactive protein measurement"	"Liver, Whole_Blood"
+myocardial infarction	Heart_Left_Ventricle
+"Graves disease, Thyrotoxic periodic paralysis"	"Thyroid, Whole_Blood"
+response to anticoagulant	Whole_Blood
+Progressive supranuclear palsy	Brain_Substantia_nigra
+"trans fatty acid measurement, trans-16:1n-7 fatty acid measurement"	Liver
+alpha-linolenic acid measurement	Liver
+blood protein measurement	Whole_Blood
+heart rate variability measurement	Heart_Left_Ventricle
+post-traumatic stress disorder	Brain_Cortex
+"sleep duration, high density lipoprotein cholesterol measurement"	"Brain_Hypothalamus, Liver"
+attempted suicide	Brain_Cortex
+alcohol dependence	Brain_Cortex
+uterine fibroid	Uterus
+behavior	Brain_Cortex
+smoking behavior	Lung
+chronic hepatitis C virus infection	Liver
+basophil percentage of granulocytes	Whole_Blood
+"fetal hemoglobin measurement, Sickle cell anemia"	Whole_Blood
+small cell lung carcinoma	Lung

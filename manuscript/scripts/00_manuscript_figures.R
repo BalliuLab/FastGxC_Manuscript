@@ -39,7 +39,7 @@ library(ggsankey)
 library(ggsankeyfier)
 
 setwd("./manuscript/Figures/")
-source(file = '/../scripts/00_functions.R')
+source(file = '../scripts/00_functions.R')
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2594,7 +2594,7 @@ if(1){
   )
   
   ggsave(plot = fig5,
-         filename = 'reviews/Fig06_GTEx_eQTL_Examples.pdf',
+         filename = 'Fig06_GTEx_eQTL_Examples.pdf',
          dpi = 300,
          height = 10, width = 16.5,
          limitsize = F)
@@ -2673,180 +2673,6 @@ if(1){
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(1){
   
-  ## enrichment results for reviews
-  if(1){
-    gwas_reviews = fread("../../results/reviews/eAssociations_strongest_eQTL_list_shared_specific_gene.txt", sep = "\t", data.table = F)
-    gwas_catalog = read_tsv("../../data/gwas_catalog_v1.0.2-associations_e100_r2020-06-17.tsv", col_types = cols()) %>%
-      separate_rows(SNPS,sep=";\\s+") %>% # split up rows that have multiple SNPs into their own rows 
-      rename(DISEASE_TRAIT = "DISEASE/TRAIT", PVAL = "P-VALUE", OR_BETA = "OR or BETA",SNP=SNPS) %>%
-      select(PARENT_TRAIT, DISEASE_TRAIT, MAPPED_TRAIT, SNP, CHR_ID, CHR_POS, CONTEXT, INTERGENIC, PVAL, OR_BETA) 
-    
-    methods = unique(gwas_reviews$method)
-    ## change SNP IDs such that they match GWAS catalog
-    gwas_reviews = gwas_reviews %>% mutate(snp = gsub("_", ":", snp), snp = sub("(^[^:]*:[^:]*):.*", "\\1", snp))
-    
-    all_method_merged_trait_snp_tissue = bind_rows(lapply(methods, function(cur_method){
-      print(paste0("running method: ", cur_method))
-      matched_SNPs_cur_method = gwas_reviews %>% filter(method == cur_method)
-      merged_trait_snp_tissue = inner_join(gwas_catalog, matched_SNPs_cur_method, by = c("SNP" = "snp"))
-    }))
-    
-    all_49_tissues = all_method_merged_trait_snp_tissue %>% dplyr::select(tissue) %>% distinct
-    
-    relevant_tissues_annot = bind_rows(
-      
-      read_csv("../Input_Files/Figure7_GWAS/082020.known-tissue-trait-associations-table.lu_et_al.csv", col_types = cols()) %>%
-        dplyr::select(MAPPED_TRAIT, Annotated_GTEx_Tissues) %>%
-        arrange(MAPPED_TRAIT) %>%
-        mutate(Annotated_GTEx_Tissues = gsub("[,]",", ",Annotated_GTEx_Tissues)) %>%
-        rename(trait = MAPPED_TRAIT, relevant_tissues = Annotated_GTEx_Tissues),
-      
-      read_csv("../Input_Files/Figure7_GWAS/GWAS_cancer_traits_matched.csv", col_types = cols()) %>% 
-        pivot_longer(-cancer_trait, names_to = "tissue_num", values_to = "tissue") %>% 
-        filter(!is.na(tissue)) %>% 
-        dplyr::select(cancer_trait, tissue) %>% 
-        group_by(cancer_trait) %>% 
-        group_modify(function(tib,key) tribble(~relevant_tissues, paste0(tib$tissue,collapse=", "))) %>% 
-        ungroup %>% 
-        rename(trait = cancer_trait) %>% 
-        dplyr::select(trait, relevant_tissues),
-      
-      tribble(~trait, ~relevant_tissues,
-              "body fat distribution", "Adipose_Visceral_Omentum, Adipose_Subcutaneous",
-              "body fat percentage", "Adipose_Visceral_Omentum, Adipose_Subcutaneous",
-              "schizophrenia", "Brain_Amygdala", "Brain_Anterior_cingulate_cortex_BA24", "Brain_Caudate_basal_ganglia", "Brain_Cortex", "Brain_Frontal_Cortex_BA9", "Brain_Hippocampus", "Brain_Nucleus_accumbens_basal_ganglia") ## Added Schizophrenia Here
-      
-    ) %>% distinct %>% group_by(trait) %>% 
-      summarise(relevant_tissues = paste(unique(unlist(strsplit(relevant_tissues, split = ", "))), collapse = ", ")) %>% 
-      arrange(trait)
-    
-    relevant_tissue_trait_pairs=unlist(sapply(1:nrow(relevant_tissues_annot), function(i) paste(relevant_tissues_annot$trait[i],unlist(strsplit(relevant_tissues_annot$relevant_tissues[i], split = ', ')), sep = "-")))
-    all_method_merged_trait_snp_tissue %<>% mutate(relevant_tissue_4_trait = paste(MAPPED_TRAIT,tissue, sep = '-') %in% relevant_tissue_trait_pairs)
-    ### filter for 
-    cont_tables = all_method_merged_trait_snp_tissue %>% 
-      filter(MAPPED_TRAIT %in% unique(relevant_tissues_annot$trait)) %>% 
-      dplyr::select(method, tissue, MAPPED_TRAIT, relevant_tissue_4_trait) %>%
-      group_by(MAPPED_TRAIT) %>% 
-      group_modify(function(tib,key){
-        
-        # annotate list of 50 tissues with either the tissue is relevant for this trait or not
-        rel_tissues = relevant_tissues_annot %>% filter(trait == key$MAPPED_TRAIT) %>% pull(relevant_tissues)
-        rel_tissues_tib = strsplit(gsub(" ", "", rel_tissues, fixed = TRUE), ",")[[1]] %>%
-          as_tibble() %>% rename(tissue = value) %>% mutate(is_relevant = T) %>% 
-          dplyr::select(tissue, is_relevant)
-        all_49_tissues.rel = all_49_tissues %>% 
-          left_join(rel_tissues_tib, by=c("tissue")) %>% 
-          mutate(is_relevant = case_when(is.na(is_relevant) ~ F, !is.na(is_relevant) ~ is_relevant)) %>% 
-          dplyr::select(tissue, is_relevant)
-        
-        tib_annotated_all = tib %>%
-          group_by(method) %>%
-          group_modify(function(tib2,key2){
-            
-            # classify each tissue as enriched/not for this method
-            #enriched_tissues_rank = tib2 %>% arrange(desc(OR)) %>% mutate(rank = as.character(1:n()))
-            enriched_tissues_rank = tib2 %>% group_by(tissue) %>% mutate(n = n()) %>% distinct %>% ungroup() %>% arrange(desc(n)) %>% mutate(rank = as.character(1:nrow(.)))
-            
-            all_49_tissues.rel.enr = all_49_tissues.rel %>% 
-              left_join(enriched_tissues_rank, by=c("tissue")) %>% 
-              mutate(is_enriched = !is.na(rank)) %>% 
-              rename(enrich_rank = rank) %>% 
-              dplyr::select(tissue, is_enriched, enrich_rank, is_relevant)
-            
-            # contingency table
-            TP = nrow(all_49_tissues.rel.enr %>% filter(is_relevant,is_enriched))
-            FP = nrow(all_49_tissues.rel.enr %>% filter(!is_relevant,is_enriched))
-            FN = nrow(all_49_tissues.rel.enr %>% filter(is_relevant,!is_enriched))
-            TN = nrow(all_49_tissues.rel.enr %>% filter(!is_relevant,!is_enriched))
-            
-            tribble(~TP, ~FP, ~FN, ~TN, TP, FP, FN, TN)
-            
-          })
-        
-        if(length(unique(tib_annotated_all$method))==2){
-          return(tib_annotated_all)
-        } else if(length(unique(tib_annotated_all$method))==1){
-          if(unique(tib_annotated_all$met)=="FastGxE") method_to_make_NA = "TbT"
-          if(unique(tib_annotated_all$met)=="TbT") method_to_make_NA = "FastGxE"
-          bind_rows(
-            tib_annotated_all,
-            tribble(~met, ~TP, ~FP, ~FN, ~TN, 
-                    method_to_make_NA, 
-                    0, 0, 
-                    nrow(rel_tissues_tib), 
-                    nrow(all_49_tissues) - nrow(rel_tissues_tib))
-          )
-        }
-        
-        
-      }) %>%
-      ungroup 
-    
-    # Precision, recall, and F1
-    pre_rec = cont_tables %>% 
-      mutate(precision = TP / (TP + FP)) %>% 
-      mutate(recall = TP / (TP + FN)) %>% 
-      mutate(f1 = 2 * precision * recall / (precision + recall)) %>% 
-      filter(!is.nan(f1)) %>% 
-      rename(Precision = precision, Recall = recall, F1 = f1) %>% 
-      dplyr::select(method, MAPPED_TRAIT, Precision, Recall, F1) %>% 
-      pivot_longer(-c("method","MAPPED_TRAIT"),names_to = "score_desc",values_to = "score") %>% 
-      mutate(score_desc = fct_relevel(score_desc,"Precision","Recall"))
-    
-    # Rank of all enriched tissues
-    ranks = all_method_merged_trait_snp_tissue %>% 
-      filter(MAPPED_TRAIT %in% unique(relevant_tissues_annot$trait)) %>% 
-      dplyr::select(method, MAPPED_TRAIT, tissue, relevant_tissue_4_trait) %>%
-      arrange(method, MAPPED_TRAIT, relevant_tissue_4_trait) %>% group_by(method, MAPPED_TRAIT, tissue) %>% mutate(n = n()) %>% distinct %>%
-      group_by(method, MAPPED_TRAIT)  %>% 
-      #mutate(rank_or=order(n, decreasing = T)) %>% 
-      mutate(rank_or = rank(-n, ties.method = "first")) %>%
-      ungroup 
-    
-    FigA=ggplot() + 
-      scale_fill_manual(name="",values = c("CxC"="#c87e7e","FastGxC"="#56A3E9")) +
-      theme_bw() + 
-      theme(legend.position = "none",
-            axis.text.x= element_blank(), #element_text(angle = 90, hjust = 1, vjust = .5),
-            axis.ticks.x = element_blank(),
-            legend.text=element_text(size=20),
-            axis.line = element_line(colour = "black"),
-            strip.text.x = element_text(size=20),
-            axis.text = element_text(size=15, color = 'black'),
-            axis.title.x = element_blank(), 
-            axis.title.y = element_text(size=12)) 
-    
-    FigA1 = FigA + geom_boxplot(data = pre_rec %>% filter(score_desc=="Precision"), mapping = aes(x = method, y = 100*score, fill= method)) + ggtitle("") +
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 12), axis.title = element_text(size = 10, face = "bold")) + ylab("Precision (%)")
-    
-    FigA2 = FigA + geom_boxplot(data = pre_rec %>% filter(score_desc=="Recall"), mapping = aes(x = method, y = 100*score, fill= method)) + ylab("Recall (%)") + ggtitle("") + 
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 12), axis.title = element_text(size = 10, face = "bold"))
-    dat <- ggplot_build(FigA2)$data[[1]] %>% mutate(fill=factor(x = fill, levels = c("#c87e7e","#56A3E9"), labels = c("CxC","FastGxC")))
-    FigA2 = FigA2 + geom_segment(data=dat, aes(x=xmin, xend=xmax,  y=middle, yend=middle, color=fill), size=4) + 
-      scale_color_manual(name="",values = c("CxC"="#c87e7e","FastGxC"="#56A3E9"))
-    
-    FigA3 = FigA + geom_boxplot(data =   ranks %>%
-                                  filter(relevant_tissue_4_trait) %>% 
-                                  mutate(score_desc="Rank of relevant tissue", score=rank_or),
-                                mapping = aes(x = method, y = score, fill= method)) + ylab("Relevant tissue rank") + ggtitle("") + 
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 12), axis.title = element_text(size = 10, face = "bold"))
-    
-    FigA4 = FigA + geom_boxplot(data =  cont_tables %>% 
-                                  mutate(method = if_else(method=="FastGxE","FastGxC",method)) %>% 
-                                  mutate(score_desc="Number of enriched tissues", score=FP + TP) 
-                                , mapping = aes(x = method, y = score, fill= method)) + ylab("Nr enriched tissues") + ggtitle("")+
-      theme(plot.title = element_text(hjust=0.5, face = "bold", size = 12), axis.title = element_text(size = 10, face = "bold"))
-    
-    
-    fig7A=gridExtra::grid.arrange(FigA1,FigA2,FigA3,FigA4, nrow=1)
-    ggsave(plot = fig7A,
-           filename = 'reviews/Figure07A_strongest_tiss.jpg', 
-           width = 7,
-           height = 4)
-    
-  }
-  
-  
   ## Data preprocess ----
   if(1){
     #  read enrichment results
@@ -2905,8 +2731,8 @@ if(1){
     all_gwas_enrich_sig_results = raw_gwas %>%  
       left_join(tree_sign_results, by = c("met","f_in","cat","tis","tra")) %>% 
       mutate(tree_sign = replace_na(tree_sign,"no")) %>% 
-      filter(tree_sign == "yes") %>% 
-      dplyr::select(met, f_in, cat, tis, tra, n_gwas_snps, OR, pval, conf_int1, conf_int2, ct1, ct2, ct3, ct4)
+      #filter(tree_sign == "yes") %>% 
+      dplyr::select(met, f_in, cat, tis, tra, n_gwas_snps, OR, tree_sign, pval, conf_int1, conf_int2, ct1, ct2, ct3, ct4)
     
     all_49_tissues = all_gwas_enrich_sig_results %>% dplyr::select(tis) %>% distinct
     
@@ -2914,50 +2740,42 @@ if(1){
     # all_gwas_enrich_sig_results = all_gwas_enrich_sig_results %>% filter(tis != "AverageTissue")
     
     #  grab, clean, and merge my old manual tissue-trait annotations
-    relevant_tissues_annot = bind_rows(
+    #relevant_tissues_annot = bind_rows(
       
-      read_csv("../Input_Files/Figure7_GWAS/082020.known-tissue-trait-associations-table.lu_et_al.csv", col_types = cols()) %>%
-        dplyr::select(MAPPED_TRAIT, Annotated_GTEx_Tissues) %>%
-        arrange(MAPPED_TRAIT) %>%
-        mutate(Annotated_GTEx_Tissues = gsub("[,]",", ",Annotated_GTEx_Tissues)) %>%
-        rename(trait = MAPPED_TRAIT, relevant_tissues = Annotated_GTEx_Tissues),
+      #read_csv("../Input_Files/Figure7_GWAS/082020.known-tissue-trait-associations-table.lu_et_al.csv", col_types = cols()) %>%
+      #  dplyr::select(MAPPED_TRAIT, Annotated_GTEx_Tissues) %>%
+      #  arrange(MAPPED_TRAIT) %>%
+      #  mutate(Annotated_GTEx_Tissues = gsub("[,]",", ",Annotated_GTEx_Tissues)) %>%
+      #  rename(trait = MAPPED_TRAIT, relevant_tissues = Annotated_GTEx_Tissues),
       
-      read_csv("../Input_Files/Figure7_GWAS/GWAS_cancer_traits_matched.csv", col_types = cols()) %>% 
-        pivot_longer(-cancer_trait, names_to = "tissue_num", values_to = "tissue") %>% 
-        filter(!is.na(tissue)) %>% 
-        dplyr::select(cancer_trait, tissue) %>% 
-        group_by(cancer_trait) %>% 
-        group_modify(function(tib,key) tribble(~relevant_tissues, paste0(tib$tissue,collapse=", "))) %>% 
-        ungroup %>% 
-        rename(trait = cancer_trait) %>% 
-        dplyr::select(trait, relevant_tissues),
-      
-      tribble(~trait, ~relevant_tissues,
-              "body fat distribution", "Adipose_Visceral_Omentum, Adipose_Subcutaneous",
-              "body fat percentage", "Adipose_Visceral_Omentum, Adipose_Subcutaneous",
-              "schizophrenia", "Brain_Amygdala", "Brain_Anterior_cingulate_cortex_BA24", "Brain_Caudate_basal_ganglia", "Brain_Cortex", "Brain_Frontal_Cortex_BA9", "Brain_Hippocampus", "Brain_Nucleus_accumbens_basal_ganglia") ## Added Schizophrenia Here
-      
-    ) %>% distinct %>% group_by(trait) %>% 
-      summarise(relevant_tissues = paste(unique(unlist(strsplit(relevant_tissues, split = ", "))), collapse = ", ")) %>% 
+      #read_csv("../Input_Files/Figure7_GWAS/GWAS_cancer_traits_matched.csv", col_types = cols()) %>% 
+      #  pivot_longer(-cancer_trait, names_to = "tissue_num", values_to = "tissue") %>% 
+      #  filter(!is.na(tissue)) %>% 
+      #  dplyr::select(cancer_trait, tissue) %>% 
+      #  group_by(cancer_trait) %>% 
+      #  group_modify(function(tib,key) tribble(~relevant_tissues, paste0(tib$tissue,collapse=", "))) %>% 
+      #  ungroup %>% 
+      #  rename(trait = cancer_trait) %>% 
+      #  dplyr::select(trait, relevant_tissues),
+    #  
+    #  tribble(~trait, ~relevant_tissues,
+    #          "body fat distribution", "Adipose_Visceral_Omentum, Adipose_Subcutaneous",
+    #          "body fat percentage", "Adipose_Visceral_Omentum, Adipose_Subcutaneous",
+    #          "schizophrenia", "Brain_Amygdala", "Brain_Anterior_cingulate_cortex_BA24", "Brain_Caudate_basal_ganglia", "Brain_Cortex", "Brain_Frontal_Cortex_BA9", "Brain_Hippocampus", "Brain_Nucleus_accumbens_basal_ganglia") ## Added Schizophrenia Here
+    #  
+    #) %>% distinct %>% group_by(trait) %>% 
+    #  summarise(relevant_tissues = paste(unique(unlist(strsplit(relevant_tissues, split = ", "))), collapse = ", ")) %>% 
+    #  arrange(trait)
+    
+    ##### use relevant traits from all traits with significant enrichment
+    relevant_tissues_annot = fread("../Input_Files/Figure7_GWAS/all_traits_relevant_tissues_annotations.csv", sep = ",", data.table = F) %>% select(Trait, Tissue)
+    names(relevant_tissues_annot) = c("trait", "relevant_tissues")
+    relevant_tissues_annot = relevant_tissues_annot %>% distinct() %>% group_by(trait) %>% summarise(relevant_tissues = paste(unique(unlist(strsplit(relevant_tissues, split = ", "))), collapse = ", ")) %>% 
       arrange(trait)
     
-    ##### use relevant traits from all 292 traits with significant enrichment
-    relevant_tissues_annot = fread("../Input_Files/Figure7_GWAS/042025.known-tissue-trait-associations-table.lu_et_al.txt", sep = "\t", data.table = F)
-    names(relevant_tissues_annot) = c("trait", "relevant_tissues")
-    relevant_tissues_annot = bind_rows(relevant_tissues_annot %>% distinct() %>% group_by(trait) %>% summarise(relevant_tissues = paste(unique(unlist(strsplit(relevant_tissues, split = ", "))), collapse = ", ")) %>% 
-      arrange(trait),
-      read_csv("../Input_Files/Figure7_GWAS/GWAS_cancer_traits_matched.csv", col_types = cols()) %>% 
-        pivot_longer(-cancer_trait, names_to = "tissue_num", values_to = "tissue") %>% 
-        filter(!is.na(tissue)) %>% 
-       dplyr::select(cancer_trait, tissue) %>% 
-        group_by(cancer_trait) %>% 
-        group_modify(function(tib,key) tribble(~relevant_tissues, paste0(tib$tissue,collapse=", "))) %>% 
-        ungroup %>% 
-        rename(trait = cancer_trait) %>% 
-        dplyr::select(trait, relevant_tissues))
-    
     # Uncomment this if you want to save the list of relevant tissues for each trait in a separate excel
-    # relevant_tissues_annot %>%  WriteXLS::WriteXLS("../SuppTables/TableS5_gwas_enrichment_results.xlsx")
+    relevant_tissues_annot %>%  WriteXLS::WriteXLS("../SuppTables/TableS5_gwas_enrichment_results_reviews.xlsx")
+    
     
     # annotate relevant tissue-trait pairs 
     relevant_tissue_trait_pairs=unlist(sapply(1:nrow(relevant_tissues_annot), function(i) paste(relevant_tissues_annot$trait[i],unlist(strsplit(relevant_tissues_annot$relevant_tissues[i], split = ', ')), sep = "-")))
@@ -2967,8 +2785,8 @@ if(1){
     cont_tables = all_gwas_enrich_sig_results %>% 
       filter(tra %in% unique(relevant_tissues_annot$trait)) %>% 
       filter(f_in == "each_tissue", cat=="MAPPED_TRAIT") %>% 
-      dplyr::select(met, tis, tra, OR) %>% 
-      filter(OR>1) %>%   #### only ORs > 1 = enriched!
+      dplyr::select(met, tis, tra, OR, tree_sign) %>% 
+      #filter(OR>1) %>%   #### only ORs > 1 = enriched!
       group_by(tra) %>% 
       group_modify(function(tib,key){
         
@@ -2989,11 +2807,18 @@ if(1){
             # classify each tissue as enriched/not for this method
             enriched_tissues_rank = tib2 %>% arrange(desc(OR)) %>% mutate(rank = as.character(1:n()))
             
+            #all_49_tissues.rel.enr = all_49_tissues.rel %>% 
+            #  left_join(enriched_tissues_rank, by=c("tis")) %>% 
+            #  mutate(is_enriched = !is.na(OR)) %>% 
+            #  rename(enrich_OR = OR, enrich_rank = rank) %>% 
+            #  dplyr::select(tis, is_enriched, enrich_OR, enrich_rank, is_relevant)
+            
             all_49_tissues.rel.enr = all_49_tissues.rel %>% 
               left_join(enriched_tissues_rank, by=c("tis")) %>% 
-              mutate(is_enriched = !is.na(OR)) %>% 
+              mutate(is_enriched = case_when(OR > 1 & tree_sign == "yes" ~ TRUE, TRUE ~ FALSE)) %>% 
               rename(enrich_OR = OR, enrich_rank = rank) %>% 
-              dplyr::select(tis, is_enriched, enrich_OR, enrich_rank, is_relevant)
+              dplyr::select(tis, is_enriched, enrich_OR, enrich_rank, is_relevant) 
+            
             
             # contingency table
             TP = nrow(all_49_tissues.rel.enr %>% filter(is_relevant,is_enriched))
@@ -3047,68 +2872,7 @@ if(1){
       mutate(rank_or=order(OR, decreasing = T), rank_p=order(minusLog10P, decreasing = T)) %>% 
       ungroup %>% 
       mutate(met = case_when(met == "TbT" ~ "CxC", met == "FastGxE" ~ "FastGxE", T ~ "???"))
-    
-    #### add method to split shared and specific
-    cont_tables_shared <- cont_tables %>%
-      mutate(met = case_when(
-        tra == "cancer" & met == "FastGxE" ~ "FastGxC Shared",
-        TRUE ~ met  # retain original value otherwise
-      ))
-    
-    # Precision, recall, and F1
-    pre_rec_shared = cont_tables_shared %>% 
-      mutate(precision = TP / (TP + FP)) %>% 
-      mutate(recall = TP / (TP + FN)) %>% 
-      mutate(f1 = 2 * precision * recall / (precision + recall)) %>% 
-      filter(!is.nan(f1)) %>% 
-      rename(Precision = precision, Recall = recall, F1 = f1) %>% 
-      dplyr::select(met, tra, Precision, Recall, F1) %>% 
-      pivot_longer(-c("met","tra"),names_to = "score_desc",values_to = "score") %>% 
-      mutate(score_desc = fct_relevel(score_desc,"Precision","Recall")) %>% 
-      mutate(met = if_else(met=="FastGxE","FastGxC Specific",met))
-    
-    # Rank of all enriched tissues
-    ranks_shared = all_gwas_enrich_sig_results %>% 
-      filter(tra %in% unique(relevant_tissues_annot$trait)) %>% 
-      filter(f_in == "each_tissue", cat=="MAPPED_TRAIT")  %>% 
-      dplyr::select(met, tra, tis, relevant_tissue_4_trait, OR, pval) %>%
-      mutate(minusLog10P=-log10(pval)) %>% arrange(met,tra,relevant_tissue_4_trait) %>% 
-      group_by(met, tra)  %>% 
-      mutate(rank_or=order(OR, decreasing = T), rank_p=order(minusLog10P, decreasing = T)) %>% 
-      ungroup %>% 
-      mutate(met = case_when(met == "TbT" ~ "CxC", met == "FastGxE" ~ "FastGxE", T ~ "???"))
-    
   }
-  
-  #### code to plot shared as it's own line
-  FigA=ggplot() + 
-    scale_fill_manual(name="",values = c("CxC"="#c87e7e","FastGxC Specific"="#56A3E9")) +
-    theme_bw() + 
-    theme(legend.position = "none",
-          axis.text.x=element_text(angle = 45, hjust = 1, vjust = 1),
-          #axis.ticks.x = element_blank(),
-          legend.text=element_text(size=20),
-          axis.line = element_line(colour = "black"),
-          strip.text.x = element_text(size=20),
-          axis.text = element_text(size=15, color = 'black'),
-          axis.title.x = element_blank(), 
-          axis.title.y = element_text(size=12)) 
-  
-  FigA1 = FigA + geom_boxplot(data = pre_rec_shared %>% filter(score_desc=="Precision"), mapping = aes(x = met, y = 100*score, fill= met)) + ggtitle("") +
-    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 12), axis.title = element_text(size = 10, face = "bold")) + ylab("Precision (%)")
-  
-  FigA2 = FigA + geom_boxplot(data = pre_rec_shared %>% filter(score_desc=="Recall"), mapping = aes(x = met, y = 100*score, fill= met)) + ylab("Recall (%)") + ggtitle("") + 
-    theme(plot.title = element_text(hjust=0.5, face = "bold", size = 12), axis.title = element_text(size = 10, face = "bold"))
-  dat <- ggplot_build(FigA2)$data[[1]] %>% mutate(fill=factor(x = fill, levels = c("#c87e7e","#56A3E9"), labels = c("CxC","FastGxC Specific")))
-  FigA2 = FigA2 + geom_segment(data=dat, aes(x=xmin, xend=xmax,  y=middle, yend=middle, color=fill), size=4) + 
-    scale_color_manual(name="",values = c("CxC"="#c87e7e","FastGxC Specific"="#56A3E9"))
-  
-  fig7A_shared=gridExtra::grid.arrange(FigA1,FigA2, nrow=1)
-  ggsave(plot = fig7A_shared,
-         filename = 'reviews/Figure07A_shared_separate_precision_recall.jpg', 
-         width = 5,
-         height = 4)
-  
   
   # Figure A: precision, recall, rank relevant tissue, nr of enriched tissues  ----
   FigA=ggplot() + 
@@ -3149,16 +2913,10 @@ if(1){
   fig7A=gridExtra::grid.arrange(FigA1,FigA2,FigA3,FigA4, nrow=1)
   #fig7A=gridExtra::grid.arrange(FigA1,FigA3,FigA4, nrow = 1)
   fig7A=gridExtra::grid.arrange(FigA1,FigA2,FigA3,FigA4, nrow=1)
-  ggsave(plot = fig7A,
-         filename = 'reviews/Figure07A_with_all_annotations.jpg', 
-         width = 7,
-         height = 4)
-  
-  fig7A_shared=gridExtra::grid.arrange(FigA1,FigA2, nrow=1)
-  ggsave(plot = fig7A_shared,
-         filename = 'reviews/Figure07A_original_precision_recall.jpg', 
-         width = 5,
-         height = 4)
+  #ggsave(plot = fig7A,
+  #       filename = 'Figure07A_with_all_annotations.jpg', 
+  #       width = 7,
+  #       height = 4)
   
   
   # # manuscript claims : median precision per trait
@@ -3179,7 +2937,7 @@ if(1){
   if(1){
     example_traits = c("breast carcinoma", "lung adenocarcinoma", "melanoma", "prostate carcinoma","Testicular Germ Cell Tumor", "cancer", "coronary artery disease","atrial fibrillation") #, "hypertension"
     
-    table_dat = all_gwas_enrich_sig_results %>% 
+    table_dat = all_gwas_enrich_sig_results %>% filter(tree_sign == "yes") %>%
       filter(tra %in% unique(relevant_tissues_annot$trait)) %>% 
       filter(tra %in% example_traits) %>%
       mutate(tra = factor(x = tra, levels = example_traits)) %>%
@@ -3476,13 +3234,20 @@ if(1){
   
   
   ## temp Fig 7c_b
-  fig7C_b_temp = final_specific_shared_coloc  %>%
-    ggplot(mapping = aes(x = factor(study, levels = c("Tissues", "PBMCs")), y = 100*percentage, alpha = factor(component, levels = c("Specific", "Shared")), fill=factor(component, levels = c("Specific", "Shared")))) + 
-    geom_bar(position="dodge", stat="identity", color = "black", width = 0.7) +
-    scale_fill_manual(values = c("#0f4271", "#56A3E9")) + 
+  fig7C_b_temp = final_specific_shared_coloc %>% mutate(component = factor(component, levels = c("Specific", "Shared"))) %>% mutate(component = fct_relevel(component,c("Specific", "Shared"))) %>%
+    ggplot(mapping = aes(x = factor(study, levels = c("Tissues", "PBMCs")), y = 100*percentage, alpha = component, fill = component)) + 
+    geom_bar(position="dodge", stat="identity", color = "black",fill = "white", width = 0.7) +
+    geom_bar_pattern(aes(pattern = component), position="dodge", stat="identity", color = "black", width = 0.7) +
+    scale_pattern_manual(values = c("stripe", "none"), labels = c( "Specific" = "Specific",
+                                                                   "Shared" = "Shared"))+
+    #scale_fill_manual(values = c("#0f4271", "#56A3E9")) + 
+    scale_fill_manual(values = c("white", "white"), labels = c("Specific" = "Specific", 
+                                                               "Shared" = "Shared")) + 
     scale_alpha_manual(values = c(1,0.3, 1))+
     #facet_wrap(~factor(study, levels = c("Tissues", "PBMCs")), scales = "free")+
     #scale_y_continuous(limits = c(0,1))+
+    guides( pattern = guide_legend(),
+            fill = guide_legend())+
     theme_bw() + 
     theme(legend.position="top",
           axis.title = element_text(face = "bold", size=12,color="black"),
@@ -3587,10 +3352,16 @@ if(1){
       group_by(study, group) %>% 
       summarize(value = n()) %>% 
       group_by(study) %>% 
-      mutate(percentage = value/sum(value)) %>% mutate(study = factor(study, levels=(c("Tissues", "PBMCs")))) %>%
-      ggplot(mapping = aes(x = study, y = percentage, alpha = factor(group, levels = c("Specific", "Shared", "Both")), fill=factor(group, levels = c("Specific", "Shared", "Both")))) + 
-      geom_bar(position="stack", stat="identity", color = "black", width = 0.7) +
-      scale_fill_manual(values = c("#56A3E9", "#56A3E9", "white")) + 
+      mutate(percentage = value/sum(value)) %>% mutate(study = factor(study, levels=(c("Tissues", "PBMCs")))) %>% mutate(group = fct_relevel(group,c("Shared", "Specific", "Both"))) %>%
+      ggplot(mapping = aes(x = study, y = percentage, alpha = group, fill=group)) + 
+      geom_bar_pattern(aes(pattern = group), position="stack", stat="identity", color = "black", width = 0.7) +
+      #scale_fill_manual(values = c("#0f4271", "#56A3E9", "white")) + 
+      scale_pattern_manual(values = c("none", "stripe", "weave"), labels = c( "Shared" = "Shared",
+                                                                              "Specific" = "Specific",
+                                                                              "Both" = "Both")) +
+      scale_fill_manual(values = c("white", "white", "white"), labels = c("Shared" = "Shared", 
+                                                                          "Specific" = "Specific",
+                                                                          "Both" = "Both")) + 
       scale_alpha_manual(values = c(1,0.3, 1))+
       scale_x_discrete(labels = c("GTEx" = "Tissues", 
                                   "Single-Cell" = "PBMC"))+
@@ -3613,10 +3384,10 @@ if(1){
             panel.spacing = unit(2, "lines")) + 
       xlab("") + ylab("Proportion of FastGxC Colocs")
     
-    ggsave(plot = fig7C_b,
-           filename = 'FigureS18_FastGxC_coloc.jpg', 
-           width = 6,
-           height = 7)
+    #ggsave(plot = fig7C_b,
+    #       filename = 'FigureS18_FastGxC_coloc.jpg', 
+    #       width = 6,
+    #       height = 7)
   }
   
   ### of the FastGxC unique colocs, what is the sharing and specificity?
@@ -3669,9 +3440,8 @@ if(1){
     xlab("") + ylab("Proportion of unique FastGxC colocs")
   
   
-  
   legend = get_legend(fig7C + theme(legend.position = "top", legend.text = element_text(size = 20)))
-  legend_sh_sp = get_legend(fig7C_b_temp + theme(legend.position = "top", legend.text = element_text(size = 20)))
+  legend_sh_sp = get_legend(fig3A + theme(legend.position = "top", legend.text = element_text(size = 20)))
   
   combineLegend = ggdraw() +
     draw_plot(legend, x = 0.25, y = 0.3, width = 0.3, height = 0.15) +
@@ -3682,18 +3452,19 @@ if(1){
       combineLegend 
     ),
     ggdraw() + 
-      draw_plot(plot = fig7A, x = 0.01, y = 0.77, height = 0.2, width = 0.59) +
-      draw_plot(plot = fig7B, x = 0.12, y = -0.01, width = 0.8) +
-      draw_plot(plot = fig7C + theme(legend.position = "none"), x = 0.62, y = 0.75, width = 0.15, height = 0.2)+
-      draw_plot(plot = fig7C_b_temp + theme(legend.position = "none"), x = 0.77, y = 0.75, width = 0.22, height = 0.2)+
-      draw_plot_label(label = c('A','B', 'C'),  x = c(0,0, 0.6), y = c(0.98,0.76,0.98), size = 30),
+      draw_plot(plot = fig7A, x = 0.01, y = 0.77, height = 0.22, width = 0.5) +
+      draw_plot(plot = fig7B, x = 0.12, y = 0, width = 0.8) +
+      draw_plot(plot = fig7C + theme(legend.position = "none"), x = 0.52, y = 0.75, width = 0.15, height = 0.22)+
+      draw_plot(plot = fig7C_b + theme(legend.position = "none"), x = 0.67, y = 0.75, width = 0.15, height = 0.22)+
+      draw_plot(plot = fig7C_b_temp + theme(legend.position = "none"), x = 0.83, y = 0.75, width = 0.15, height = 0.22)+
+      draw_plot_label(label = c('A','B', 'C'),  x = c(0,0, 0.5), y = c(1,0.76,1), size = 30),
     
     ncol = 1,
     rel_heights = c(0.3, 12)
   )
   
   #fig7 = plot_grid(fig7, barplot_legend, ncol = 1, rel_heights = c(1, .05))
-  ggsave(filename = 'reviews/Fig07_final_all_annotations.pdf', plot = fig7, width = 15, height = 15, limitsize = F)
+  ggsave(filename = 'Fig07_final_all_annotations.pdf', plot = fig7, width = 15, height = 15, limitsize = F)
   #ggsave(filename = 'Fig07_GWAS.pdf', plot = fig7, width = 15, height = 15, limitsize = F)
   
 }  
@@ -3868,6 +3639,152 @@ if(1){
          height = 12)
   
 }
+
+######### new supplemental figure (combo of sample size, eQTL effects, and sankey)
+
+samp_size_bulk = ggplot(eGenes_samp_size_bulk, aes(x = n_samples, y = n, color = exp_type, alpha = exp_type))+
+  geom_point(size = 5) + scale_color_manual(values = c("CxC" = "#c87e7e","FastGxC" = "#56A3E9", 'FastGxC Single Context' = "#56A3E9", "CxC Single Context" = "#c87e7e")) +
+  scale_alpha_manual(values = c(1, 0.3,1,0.3))+
+  geom_smooth(method='lm', se=FALSE, linewidth = 3) + 
+  guides(color = guide_legend("exp_type"),
+         alpha = guide_legend("exp_type"))+
+  theme_bw() +
+  facet_grid(facet_lab~cohort, scales = "free")+
+  theme(
+    strip.text.x = element_text(size = 20, face = "bold"),
+    strip.text.y = element_blank(),
+    legend.box = 'horizontal',
+    legend.position="top",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(colour = "black"),
+    axis.title = element_text(size=20,color="black"),
+    axis.text = element_text(size=15,color="black"),
+    plot.title = element_text(hjust = 0.5,size=15),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.title=element_blank(),
+    legend.text=element_text(size=15))+
+  xlab("Number of samples") + ylab("Number of eGenes")+
+  geom_abline(slope=1, intercept = 0)
+
+cell_num_sc = ggplot(eGenes_samp_size_sc, aes(x = log10(num_cells), y = n, color = exp_type, alpha = exp_type))+
+  geom_point(size = 5) + scale_color_manual(values = c("CxC" = "#c87e7e","FastGxC" = "#56A3E9", 'FastGxC Single Context' = "#56A3E9", "CxC Single Context" = "#c87e7e")) +
+  scale_alpha_manual(values = c(1, 0.3,1,0.3))+
+  geom_smooth(method='lm', se=FALSE, linewidth = 3) + 
+  theme_bw() +
+  facet_grid(facet_lab~cohort, scales = "free")+
+  theme(
+    strip.text.x = element_text(size = 20, face = "bold"),
+    strip.text.y = element_blank(),
+    legend.box = 'horizontal',
+    legend.position="top",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title.y=element_blank(),
+    axis.line = element_line(colour = "black"),
+    axis.title = element_text(size=20,color="black"),
+    axis.text = element_text(size=15,color="black"),
+    plot.title = element_text(hjust = 0.5,size=15),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.title=element_blank(),
+    legend.text=element_text(size=15))+
+  xlab("log10 Number of cells") + ylab("Number of eGenes")+
+  geom_abline(slope=1, intercept = 0)
+
+legend = get_legend(samp_size_bulk + theme(legend.position = "top"))
+supp_fig5 = plot_grid(legend, plot_grid(
+  samp_size_bulk + theme(legend.position = "none"), cell_num_sc + theme(legend.position = "none"),
+  rel_widths = c(0.8,0.7)
+), ncol = 1, rel_heights = c(1,11))
+
+supp4_egenes = bind_rows(bind_rows(egenes_counted, eqtls_counted, esnps_counted) %>% mutate(study = "PBMC"), 
+                         bind_rows(egenes_counted_bulk, eqtls_counted_bulk, esnps_counted_bulk) %>% mutate(study = "Tissues")) %>%
+  filter(cohort == "eGenes") %>% mutate(study = factor(study, levels = c("Tissues", "PBMC"))) %>% ggplot(aes(fill=group, y=value, x=cohort))+ 
+  geom_bar(position="dodge", stat="identity") +
+  scale_fill_manual(name="",values = c("CxC only"="#c87e7e","FastGxC only"="#56A3E9")) +
+  facet_grid(rows = vars(study), scale = "free", labeller = label_value)+
+  theme_bw() + 
+  theme(legend.position="none",
+        axis.title = element_text(size=25,color="black"),
+        axis.text = element_text(size=20,color="black"),
+        axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5,size=15),
+        legend.title=element_blank(),
+        legend.text=element_text(size=18),
+        strip.text = element_blank(),
+        panel.spacing = unit(2, "lines")) + 
+  xlab("") + ylab("Number of discoveries")
+
+supp4_eqtls = bind_rows(bind_rows(egenes_counted, eqtls_counted, esnps_counted) %>% mutate(study = "PBMC"), 
+                        bind_rows(egenes_counted_bulk, eqtls_counted_bulk, esnps_counted_bulk) %>% mutate(study = "Tissues")) %>%
+  filter(cohort == "eQTLs") %>% mutate(study = factor(study, levels = c("Tissues", "PBMC"))) %>% ggplot(aes(fill=group, y=value, x=cohort))+ 
+  geom_bar(position="dodge", stat="identity") +
+  scale_fill_manual(name="",values = c("CxC only"="#c87e7e","FastGxC only"="#56A3E9")) +
+  facet_grid(rows = vars(study), scale = "free", labeller = label_value)+
+  theme_bw() + 
+  theme(legend.position="top",
+        axis.title = element_text(size=25,color="black"),
+        axis.text = element_text(size=20,color="black"),
+        axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5,size=15),
+        legend.title=element_blank(),
+        legend.text=element_text(size=18),
+        strip.text = element_blank(),
+        panel.spacing = unit(2, "lines")) + 
+  xlab("") + ylab("")
+
+supp4_esnps = bind_rows(bind_rows(egenes_counted, eqtls_counted, esnps_counted) %>% mutate(study = "PBMC"), 
+                        bind_rows(egenes_counted_bulk, eqtls_counted_bulk, esnps_counted_bulk) %>% mutate(study = "Tissues")) %>%
+  filter(cohort == "eSNPs") %>% mutate(study = factor(study, levels = c("Tissues", "PBMC"))) %>% ggplot(aes(fill=group, y=value, x=cohort))+ 
+  geom_bar(position="dodge", stat="identity") +
+  scale_fill_manual(name="",values = c("CxC only"="#c87e7e","FastGxC only"="#56A3E9")) +
+  facet_grid(rows = vars(study), scale = "free", labeller = label_value)+
+  theme_bw() + 
+  theme(legend.position="none",
+        axis.title = element_text(size=25,color="black"),
+        axis.text = element_text(size=20,color="black"),
+        axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5,size=15),
+        legend.title=element_blank(),
+        legend.text=element_text(size=18),
+        strip.text = element_text(face = "bold", size = 25),
+        panel.spacing = unit(2, "lines")) + 
+  xlab("") + ylab("")
+
+legend = get_legend(supp4_eqtls)
+final_supp4 = plot_grid(plot_grid(
+  legend
+),
+ggdraw()+
+  draw_plot(plot = supp4_egenes, x = 0.01, y = 0, width = 0.3) +
+  draw_plot(plot = supp4_eqtls + theme(legend.position = "none"), x = 0.32, y = 0, width = 0.3) +
+  draw_plot(plot = supp4_esnps, x = 0.64, y = 0,  width = 0.3),
+ncol = 1, rel_heights = c(1,11)
+)
+
+new_supp18 = plot_grid(
+  plot_grid(supp_fig5, final_supp4, ncol = 1, rel_heights = c(1,1)),
+  plot_grid(sankey_diagram + theme(legend.position = "top"),
+            sc_sankey_diagram + theme(legend.position = "none"), ncol = 1, rel_heights = c(1.2,1)),
+  ncol = 2, rel_widths = c(0.6, 0.4))
+new_supp18 = ggdraw(new_supp18)+
+  draw_plot_label(
+    label = c("A", "B", "C", "D"),
+    x = c(0, 0, 0.6, 0.6),  # relative x positions
+    y = c(1, 0.5, 1, 0.5),  # relative y positions
+    size = 30
+  )
+
+ggsave(plot = new_supp18,
+       filename = 'FigureS18_samp_counts_sankey.jpg', 
+       width = 18.5,
+       height = 12)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #### Table S3: gtex color + abbreviation
