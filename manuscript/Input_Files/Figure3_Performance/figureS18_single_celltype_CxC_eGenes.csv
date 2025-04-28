@@ -1,0 +1,9 @@
+tissue,n_egenes,group
+ncMono,99,PBMC
+CD4,931,PBMC
+NK,172,PBMC
+cMono,280,PBMC
+cDC,45,PBMC
+B,196,PBMC
+pDC,27,PBMC
+CD8,129,PBMC

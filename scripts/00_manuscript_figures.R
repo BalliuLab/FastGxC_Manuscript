@@ -39,7 +39,7 @@ library(ggsankey)
 library(ggsankeyfier)
 
 setwd("./manuscript/Figures/")
-source(file = '../../scripts/00_functions.R')
+source(file = '/../scripts/00_functions.R')
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1117,7 +1117,7 @@ if(1){
   if(1){
     
     ## create eGene input file
-    if(0){
+    if(1){
       egenes_gtex = read_csv("../Input_Files/Figure3_Performance/eGenes.v8.EUR.all_tissues.residualized_exp_types.txt") %>%
         mutate(exp_type = case_when(exp_type == "normalized_and_residualized_expression" ~ "CxC",
                                     exp_type == "normalized_and_residualized_expression_heterogeneous" ~ "Specific",
