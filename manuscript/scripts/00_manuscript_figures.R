@@ -1606,10 +1606,10 @@ if(1){
       rel_widths = c(1.2, 1)
     ), ncol = 1, rel_heights = c(1,12))
     
-    ggsave(plot = supp_fig5,
-           filename = 'FigureS15_samp_size.jpg', 
-           width = 12,
-           height = 6)
+    #ggsave(plot = supp_fig5,
+    #       filename = 'FigureS15_samp_size.jpg', 
+    #       width = 12,
+    #       height = 6)
     
     ################ get metrics for paper (correlations)
     ## fastgxc correlations 
@@ -1802,10 +1802,10 @@ if(1){
   ncol = 1, rel_heights = c(0.5,10)
   )
   
-  ggsave(plot = final_supp4,
-         filename = 'FigureS14_FastGxC_vs_CxC.pdf', 
-         width = 12,
-         height = 6)
+  #ggsave(plot = final_supp4,
+  #       filename = 'FigureS14_FastGxC_vs_CxC.pdf', 
+  #       width = 12,
+  #       height = 6)
   
 }
 
