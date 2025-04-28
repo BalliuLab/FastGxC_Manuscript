@@ -2902,7 +2902,6 @@ if(1){
       mutate(met = case_when(met == "TbT" ~ "CxC", met == "FastGxE" ~ "FastGxE", T ~ "???"))
   }
   
-  # Figure A: precision, recall, rank relevant tissue, nr of enriched tissues  ----
   FigA=ggplot() + 
     scale_fill_manual(name="",values = c("CxC"="#c87e7e","FastGxC"="#56A3E9")) +
     theme_bw() + 
@@ -2931,7 +2930,13 @@ if(1){
                               mapping = aes(x = met, y = score, fill= met)) + ylab("Relevant tissue rank") + ggtitle("") + 
     theme(plot.title = element_text(hjust=0.5, face = "bold", size = 12), axis.title = element_text(size = 10, face = "bold"))
   
-  FigA4 = FigA + geom_boxplot(data =  cont_tables %>% 
+  traits2filter= cont_tables %>% 
+    mutate(score=FP + TP) %>% 
+    group_by(tra) %>% 
+    summarise(no_discoveries = all(score==0)) %>% 
+    filter(!no_discoveries) %>% pull(tra)
+  
+  FigA4 = FigA + geom_boxplot(data =  cont_tables %>% filter(tra %in% traits2filter) %>% 
                                 mutate(met = if_else(met=="FastGxE","FastGxC",met)) %>% 
                                 mutate(score_desc="Number of enriched tissues", score=FP + TP) 
                               , mapping = aes(x = met, y = score, fill= met)) + ylab("Nr enriched tissues") + ggtitle("")+
@@ -2942,7 +2947,7 @@ if(1){
   #fig7A=gridExtra::grid.arrange(FigA1,FigA3,FigA4, nrow = 1)
   fig7A=gridExtra::grid.arrange(FigA1,FigA2,FigA3,FigA4, nrow=1)
   #ggsave(plot = fig7A,
-  #       filename = 'Figure07A_with_all_annotations.jpg', 
+  #       filename = 'reviews/Figure07A_with_all_annotations.jpg', 
   #       width = 7,
   #       height = 4)
   
