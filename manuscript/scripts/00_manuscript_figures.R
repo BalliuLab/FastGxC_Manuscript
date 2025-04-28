@@ -2542,14 +2542,17 @@ if(1){
                                 scale_y_discrete(labels=gtex_abbrev.vec))
   
   ## sankey diagram of distribution of CxC effects into shared effects
-  sankey_df = fread("../Input_Files/Figure5_GTEx_eQTL_Examples/sankey_diagram_df.txt", sep = "\t", data.table = F)
-  sankey_diagram = ggplot(sankey_df %>% mutate(node = case_when(node == ">50_perc_cxc" ~ ">50% CxC contexts",
-                                                                node == "50_perc_cxc" ~ "50% CxC contexts",
-                                                                node == "FastGxC_both" ~ "FastGxC both",
-                                                                node == "FastGxC_shared_only" ~ "FastGxC Sh only",
-                                                                node == "FastGxC_specific_only" ~ "FastGxC Sp only",
-                                                                node == "single-context cxc" ~ "Single-context CxC",
-                                                                node == "single-context fastgxc" ~ "Single-context FastGxC")),
+  sankey_df = fread("../Input_Files/Figure5_GTEx_eQTL_Examples/sankey_diagram_df.txt", sep = "\t", data.table = F) %>% 
+    mutate(connector = case_when(connector == "from" ~ "to", connector == "to" ~ "from")) %>% mutate(stage = factor(stage, levels = c("FastGxC", "CxC"))) %>%
+    mutate(stage = fct_relevel(stage, c("FastGxC", "CxC")))
+  sankey_df_reverse = sankey_df[c(2,1,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17,20,19),]
+  sankey_diagram = ggplot(sankey_df_reverse %>% mutate(node = case_when(node == ">50_perc_cxc" ~ "CxC >=50%",
+                                                                        node == "50_perc_cxc" ~ "CxC >1 but <50%",
+                                                                        node == "FastGxC_both" ~ "FastGxC both",
+                                                                        node == "FastGxC_shared_only" ~ "FastGxC Sh only",
+                                                                        node == "FastGxC_specific_only" ~ "FastGxC Sp only",
+                                                                        node == "single-context cxc" ~ "CxC single context",
+                                                                        node == "single-context fastgxc" ~ "FastGxC single context")),
                           aes(x = stage, y = count, group = node, color = node, fill = node,
                               connector = connector, edge_id = edge_id)) +
     geom_sankeyedge(v_space = "auto") +
@@ -2557,16 +2560,20 @@ if(1){
     custom_theme + theme_bw()+ ylab("number of eQTLs") + xlab("Tissues") + 
     theme(legend.title = element_blank(),
           legend.text = element_text(size = 10),
-          axis.title = element_text(size = 19)) + scale_y_continuous(labels = scientific_10)
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 20)) + scale_y_continuous(labels = scientific_10)
   
-  sc_sankey_df = fread("../Input_Files/Figure5_GTEx_eQTL_Examples/sc_sankey_diagram_df.txt", sep = "\t", data.table = F)
-  sc_sankey_diagram = ggplot(sc_sankey_df %>% mutate(node = case_when(node == ">50_perc_cxc" ~ ">50% CxC contexts",
-                                                                   node == "50_perc_cxc" ~ "50% CxC contexts",
-                                                                   node == "FastGxC_both" ~ "FastGxC both",
-                                                                   node == "FastGxC_shared_only" ~ "FastGxC Sh only",
-                                                                   node == "FastGxC_specific_only" ~ "FastGxC Sp only",
-                                                                   node == "single-context cxc" ~ "Single-context CxC",
-                                                                   node == "single-context fastgxc" ~ "Single-context FastGxC")),
+  sc_sankey_df = fread("../Input_Files/Figure5_GTEx_eQTL_Examples/sc_sankey_diagram_df.txt", sep = "\t", data.table = F) %>% mutate(connector = case_when(connector == "from" ~ "to", connector == "to" ~ "from")) %>%
+    mutate(stage = factor(stage, levels = c("FastGxC", "CxC"))) %>%
+    mutate(stage = fct_relevel(stage, c("FastGxC", "CxC")))
+  sc_sankey_df_reverse = sc_sankey_df[c(2,1,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17,20,19),]
+  sc_sankey_diagram = ggplot(sc_sankey_df_reverse %>% mutate(node = case_when(node == ">50_perc_cxc" ~ "CxC >=50%",
+                                                                              node == "50_perc_cxc" ~ "CxC >1 but <50%",
+                                                                              node == "FastGxC_both" ~ "FastGxC both",
+                                                                              node == "FastGxC_shared_only" ~ "FastGxC Sh only",
+                                                                              node == "FastGxC_specific_only" ~ "FastGxC Sp only",
+                                                                              node == "single-context cxc" ~ "CxC single context",
+                                                                              node == "single-context fastgxc" ~ "FastGxC single context")),
                              aes(x = stage, y = count, group = node, color = node, fill = node,
                                  connector = connector, edge_id = edge_id)) +
     geom_sankeyedge(v_space = "auto") +
@@ -2574,7 +2581,8 @@ if(1){
     custom_theme + theme_bw()+ ylab("number of eQTLs") + xlab("PBMCs") + 
     theme(legend.title = element_blank(),
           legend.text = element_text(size = 10),
-          axis.title = element_text(size = 19)) + scale_y_continuous(labels = scientific_10)
+          axis.title = element_text(size = 20),
+          axis.text = element_text(size = 20)) + scale_y_continuous(labels = scientific_10)
   
   ## main: plot eqtl examples and save ----
   fig5 = plot_grid(
@@ -2772,9 +2780,6 @@ if(1){
     names(relevant_tissues_annot) = c("trait", "relevant_tissues")
     relevant_tissues_annot = relevant_tissues_annot %>% distinct() %>% group_by(trait) %>% summarise(relevant_tissues = paste(unique(unlist(strsplit(relevant_tissues, split = ", "))), collapse = ", ")) %>% 
       arrange(trait)
-    
-    # Uncomment this if you want to save the list of relevant tissues for each trait in a separate excel
-    relevant_tissues_annot %>%  WriteXLS::WriteXLS("../SuppTables/TableS5_gwas_enrichment_results_reviews.xlsx")
     
     
     # annotate relevant tissue-trait pairs 
@@ -3819,6 +3824,17 @@ if(1){
   x = c("egenes_gtex", "egenes_sc")
   WriteXLS(x, ExcelFileName = paste0(outdir, "TableS4_FastGxC_CxC_eGenes_GTEx_and_singlecell.xlsx"), SheetNames = c("GTEx", "Single-Cell"), row.names = FALSE, col.names = TRUE)
 }
+
+### Supp Table S5
+if(1){
+  outdir = "../SuppTables/"
+  enrichment_results = raw_gwas %>% select(tra, met, tis, OR, conf_int1, conf_int2, pval) %>% rename(Trait = "tra", Method = "met", 
+                                                          Tissue = "tis", Lowerint = "conf_int1", Upperint = "conf_int2", Pval = "pval") %>% 
+    mutate(Method = case_when(Method == "FastGxE" ~ "FastGxC", Method == "TbT" ~ "CxC", TRUE~Method))
+  x = c("relevant_tissues_annot", "enrichment_results")
+  WriteXLS(x, ExcelFileName = paste0(outdir, "TableS5_gwas_enrichment_results_reviews.xlsx"), SheetNames = c("Trait Tissue Pairs", "Bulk"), row.names = FALSE, col.names = TRUE)
+}
+
 
 ### Supp Table S6
 if(1){
