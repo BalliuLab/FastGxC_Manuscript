@@ -2584,28 +2584,23 @@ if(1){
           axis.title = element_text(size = 20),
           axis.text = element_text(size = 20)) + scale_y_continuous(labels = scientific_10)
   
+  
   ## main: plot eqtl examples and save ----
   fig5 = plot_grid(
     figure5_legend,
     plot_grid(
-              plot_grid(sankey_diagram + theme(legend.position = "top"),
-              sc_sankey_diagram + theme(legend.position = "none"), nrow = 2, rel_heights = c(1.15,1)),
-              plot_eqtl_example(plot_gene = "CBS", plot_snp = "rs234728", y_axis_tissue_lab = T),
-              #plot_eqtl_example(plot_gene = "SIGLEC14", plot_snp = "rs872629", y_axis_tissue_lab = F),
-              plot_eqtl_example(plot_gene = "LDHC", plot_snp = "rs4757652", y_axis_tissue_lab = F),
-              nrow=1,
-              rel_widths = c(1.2, 0.75, 0.65),
-              labels = c("A","B","C"),
-              label_size = 25),
+      plot_grid(sankey_diagram + theme(legend.position = "top"),
+                sc_sankey_diagram + theme(legend.position = "none"), nrow = 2, rel_heights = c(1.15,1)),
+      plot_eqtl_example(plot_gene = "CBS", plot_snp = "rs234728", y_axis_tissue_lab = T),
+      #plot_eqtl_example(plot_gene = "SIGLEC14", plot_snp = "rs872629", y_axis_tissue_lab = F),
+      plot_eqtl_example(plot_gene = "LDHC", plot_snp = "rs4757652", y_axis_tissue_lab = F),
+      nrow=1,
+      rel_widths = c(1.2, 0.75, 0.65),
+      labels = c("A","B","C"),
+      label_size = 25),
     ncol=1,
     rel_heights = c(1,20)
   )
-  
-  ggsave(plot = fig5,
-         filename = 'Fig06_GTEx_eQTL_Examples.pdf',
-         dpi = 300,
-         height = 10, width = 16.5,
-         limitsize = F)
   
   ## supps: additional examples + LDHC manhattan plots  ----
   
@@ -2668,9 +2663,37 @@ if(1){
     label_size = 25
   )
   
+  ################# modified S16
+  fig5_examples = plot_grid(
+    figure5_legend,
+    plot_grid(
+      plot_eqtl_example(plot_gene = "CBS", plot_snp = "rs234728", y_axis_tissue_lab = T),
+      plot_eqtl_example(plot_gene = "SIGLEC14", plot_snp = "rs872629", y_axis_tissue_lab = F),
+      plot_eqtl_example(plot_gene = "LDHC", plot_snp = "rs4757652", y_axis_tissue_lab = F),
+      nrow=1,
+      rel_widths = c(0.75, 0.65, 0.65),
+      labels = c("A","B","C"),
+      label_size = 25),
+    ncol=1,
+    rel_heights = c(1,20)
+  )
+  figsupp_examples = plot_grid(plot_eqtl_example(plot_gene = "MUC20P1", plot_snp = "rs139637885", y_axis_tissue_lab = T),
+                               plot_eqtl_example(plot_gene = "GBP3", plot_snp = "rs7544740", y_axis_tissue_lab = F),
+                               plot_eqtl_example(plot_gene = "GSTT2", plot_snp = "rs369691", y_axis_tissue_lab = F),
+                               nrow=1,
+                               rel_widths = c(1, 0.8, 0.8),
+                               labels = c("D","E","F"),
+                               label_size = 25)
+  
+  fig_supp_total = plot_grid(
+    fig5_examples,
+    figsupp_examples,
+    ncol=1,
+    rel_heights = c(1,1)
+  )
   
   ggsave(plot = fig_supp_total,
-         filename = 'FigureS16_GTEx_eQTL_Examples_test.pdf',
+         filename = 'FigureS19_GTEx_eQTL_Examples.pdf',
          dpi = 300,
          height = 20, width = 18, limitsize = F)
   
