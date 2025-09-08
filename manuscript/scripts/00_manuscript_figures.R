@@ -3803,21 +3803,37 @@ ncol = 1, rel_heights = c(1,11)
 
 new_supp18 = plot_grid(
   plot_grid(supp_fig5, final_supp4, ncol = 1, rel_heights = c(1,1)),
-  plot_grid(sankey_diagram + theme(legend.position = "top"),
-            sc_sankey_diagram + theme(legend.position = "none"), ncol = 1, rel_heights = c(1.2,1)),
-  ncol = 2, rel_widths = c(0.6, 0.4))
+  ncol = 1, rel_widths = c(1,1))
 new_supp18 = ggdraw(new_supp18)+
   draw_plot_label(
-    label = c("A", "B", "C", "D"),
-    x = c(0, 0, 0.6, 0.6),  # relative x positions
-    y = c(1, 0.5, 1, 0.5),  # relative y positions
+    label = c("A", "B"),
+    x = c(0, 0),  # relative x positions
+    y = c(1, 0.5),  # relative y positions
     size = 30
   )
 
 ggsave(plot = new_supp18,
-       filename = 'FigureS18_samp_counts_sankey.jpg', 
-       width = 18.5,
+       filename = 'FigureS18_samp_counts.jpg', 
+       width = 12,
        height = 12)
+
+
+####### save sankey plots as their own figure #############
+sankey_test = plot_grid(
+  sankey_legend = get_legend(sankey_diagram + theme(legend.position = "top")),
+  plot_grid(
+    plot_grid(sankey_diagram + theme(legend.position = "none"),
+              sc_sankey_diagram + theme(legend.position = "none"), nrow = 1, rel_widths = c(1,1),
+              labels = c("A","B"),
+              label_size = 25)),
+  ncol=1,
+  rel_heights = c(3,17)
+)
+ggsave(plot = sankey_test,
+       filename = 'Figure_4_Correlation_Heatmap/Fig04_sankey_only.jpg', 
+       width = 12,
+       height = 6)
+###########################################################
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #### Table S3: gtex color + abbreviation
