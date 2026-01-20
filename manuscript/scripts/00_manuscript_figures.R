@@ -2,7 +2,7 @@
 #%%%%%%%%%%%%%%% 
 #%%%%%%%%%%%%%%% FastGxC Manuscript Figures
 #%%%%%%%%%%%%%%% Lena Krockenberger, Andrew Lu and Brunilda Balliu
-#%%%%%%%%%%%%%%% Thursday, January 14 2021
+#%%%%%%%%%%%%%%% Thursday, January 15 2026
 #%%%%%%%%%%%%%%% 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 rm(list=ls())
@@ -373,6 +373,9 @@ if(1){
     run_time=read_csv("../Input_Files/Figure2_Simulation/run_time.csv") %>%
       mutate(model=factor(x = model, levels = c("TbT", "LM-GxE", "LMM-GxE", "FastGxE"), labels=c("CxC", "LM-GxC", "LMM-GxC", "FastGxC")))
     
+    run_time_sc=read_csv("../Input_Files/Figure2_Simulation/run_time_sc.csv")%>%
+      mutate(model=factor(x = model, levels = c("TbT (Matrix eQTL)", "LM-GxE", "LMM-GxE", "FastGxE (Matrix eQTL)"), labels=c("CxC", "LM-GxC", "LMM-GxC", "FastGxC")))
+    
   }
   
   main_methods= c("CxC", "LM-GxC", "LMM-GxC", "FastGxC", "MetaTissue")
@@ -572,6 +575,61 @@ if(1){
         methods_color_scale +
         xlab("Number of Tests") +
         labs(color='') 
+      
+      ### runtime figure with single cell data
+      n_indi = 250
+      n_tiss = 50
+      
+      ### get projected results for n_tests = 200e6
+      n_tested_to_project = 200e6
+      lm_results = run_time_sc %>% 
+        filter(n_individuals == n_indi, n_tissues == n_tiss) %>% 
+        dplyr::select(n_tests,model,avg_days) %>%  
+        group_by(model) %>% 
+        summarise(avg_days=10^predict(object=lm(log10(avg_days) ~ log10(n_tests)), 
+                                      newdata = data.frame(n_tests = c(n_tested_to_project)))) %>% 
+        mutate(n_tests=n_tested_to_project)  %>% dplyr::select(model,n_tests,avg_days)
+      
+      
+      pd=position_dodge(0.1)
+      
+      Figure2D_sc = run_time_sc %>% 
+        filter(n_individuals == n_indi, n_tissues == n_tiss) %>% dplyr::select(n_tests,model,avg_days) %>% 
+        ggplot(aes(x = log10(n_tests),y = avg_days, color = model)) +
+        geom_point(position = pd,size=pcs) +
+        geom_line(aes(group = model), position = pd) +
+        #### add projected point
+        geom_point(data=lm_results,aes(x = log10(n_tests),y = avg_days, color = model), size=pcs, position = pd) +
+        geom_line(data=bind_rows(lm_results,run_time_sc %>% filter(n_individuals == n_indi) %>% 
+                                   dplyr::select(n_tests,model,avg_days) %>% 
+                                   filter(n_tests==1e7)),
+                  aes(group=model), linetype="dashed",position = pd) +
+        ### add label for time @ projected points
+        geom_label_repel(data=lm_results %>% 
+                           mutate(time_label = case_when(model == "FastGxC" ~ paste0(round(avg_days*24*60)," mins"),
+                                                         model == "CxC" ~ paste0(round(avg_days*24)," days"),
+                                                         model == "LM-GxC" ~ paste0(round(avg_days/30)," months"),
+                                                         model == "LMM-GxC" ~ paste0(round(avg_days/365)," years"))),
+                         aes(x = log10(n_tests),y = avg_days,label=time_label,color=model),
+                         point.padding = 3, size=6, show.legend = FALSE, segment.alpha = 0, 
+                         arrow = arrow(length = unit(0.015, "npc")))+
+        scale_y_continuous("Run time in days (log)",trans = log10_trans(),
+                           breaks = trans_breaks("log10", function(x) 10^x),
+                           labels = trans_format("log10", math_format(10^.x))) +
+        scale_x_continuous("Number of tests (log)", breaks = seq(2,9), labels = math_format(10^.x), limits = c(1.8,9)) +
+        theme_bw() +
+        custom_theme +
+        theme(legend.position="none"
+              # axis.title = element_text(size=20,color="black"),
+              # axis.text = element_text(size=20,color="black"),
+              # axis.line = element_line(colour = "black"),
+              # plot.title = element_text(hjust = 0.5,size=15),
+              # legend.title=element_text(size=15),
+              # legend.text=element_text(size=23)
+        ) +
+        methods_color_scale +
+        xlab("Number of Tests") +
+        labs(color='') 
     }
     
     ## Combined Figure 2
@@ -624,11 +682,15 @@ if(1){
   
   # Sup Figure S1: Global Type I Error Rate 
   if(1){
-    
     ggsave(filename="FigureS01_global_T1ErRate.png",
            plot =  ggplot(sim_res %>% 
                             filter(Tissues == "global_eQTL" & scenario_nr %in% c(1:5) &
-                                     (method %in% main_methods) ) %>% #
+                                     (method %in% main_methods) ) %>%
+                          mutate(missing = as.character(missing),
+                          missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                              missing == "OneK1K missing" ~ "5% missing",
+                                              TRUE ~ missing),
+                          missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>% #
                             droplevels(), 
                           aes(x=w_corr, y = PD, color = method)) + 
              geom_point(aes(shape = method), size=3, position=position_dodge(d)) + 
@@ -658,6 +720,11 @@ if(1){
            plot =  ggplot(sim_res %>% 
                             filter(Tissues == "global" & scenario_nr %in% c(1:10) &
                                      (method %in% main_methods) ) %>% #
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels(), 
                           aes(x=w_corr, y = PD, color = method, linetype=shared)) + 
              geom_point(aes(shape = method), size=3, position=position_dodge(d)) + 
@@ -688,6 +755,11 @@ if(1){
                                      scenario_nr %in% c(6:10) & 
                                      N=="#Individuals:100" &
                                      (method %in% main_methods_noLM_GxC) ) %>%
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels() %>%
                             mutate(shared=factor(shared, levels = "Shared", labels="Shared-only")), 
                           aes(x=w_corr, y = PD, color = method)) + 
@@ -718,6 +790,11 @@ if(1){
                             #mutate(par_space2=gsub(pattern="heterogeneity", replacement = "spec", x = par_space2)) %>% 
                             filter(Tissues == "global_eQTL" & scenario_nr %in% c(11:20) & N!="#Individuals:698" &
                                      (method %in% main_methods_noLM_GxC) ) %>%
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels(), 
                           aes(x=w_corr, y = PD, color = method, linetype = shared)) + 
              geom_point(aes(shape = method),size=3, position=position_dodge(d)) + 
@@ -745,6 +822,11 @@ if(1){
            plot =  ggplot(sim_res %>% 
                             filter(Tissues == "global_eQTL" & scenario_nr %in% c(36:40) & N!="#Individuals:698" &
                                      method %in% main_methods_noLM_GxC) %>%
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels(), 
                           aes(x=w_corr, y = PD, color = method)) + 
              geom_point(aes(shape = method),size=3, position=position_dodge(d)) + 
@@ -773,6 +855,11 @@ if(1){
                             #mutate(par_space2=gsub(pattern="heterogeneity", replacement = "spec", x = par_space2)) %>% 
                             filter(Tissues == "global" & scenario_nr %in% c(11:20) &
                                      (method %in% main_methods) ) %>%
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels(), 
                           aes(x=w_corr, y = PD, color = method)) + 
              geom_point(aes(shape = method), size=3, position=position_dodge(d)) + 
@@ -801,6 +888,11 @@ if(1){
                             #mutate(par_space2=gsub(pattern="heterogeneity", replacement = "spec", x = par_space2)) %>% 
                             filter(Tissues == "global" & scenario_nr %in% c(21:30) &
                                      (method %in% main_methods) ) %>%
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels(), 
                           aes(x=w_corr, y = PD, color = method)) + 
              geom_point(aes(shape = method), size=3, position=position_dodge(d)) + 
@@ -829,6 +921,11 @@ if(1){
            plot =  ggplot(sim_res %>% 
                             filter(Tissues == "global" & scenario_nr %in% c(36:40) &
                                      method %in% main_methods) %>%
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels(), 
                           aes(x=w_corr, y = PD, color = method, shape = N)) + 
              geom_point(size=3, position=position_dodge(d)) + 
@@ -856,6 +953,11 @@ if(1){
            plot =  ggplot(sim_res %>% 
                             filter(Tissues != "global" & scenario_nr %in% c(1:10) &
                                      (method %in% "FastGxC") & Tissues %in% paste0("p.value_T",seq(1,49))) %>% #
+                            mutate(missing = as.character(missing),
+                                   missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                                       missing == "OneK1K missing" ~ "5% missing",
+                                                       TRUE ~ missing),
+                                   missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
                             droplevels(), 
                           aes(x=as.character(w_corr), y = PD, color = method, linetype = shared)) + 
              facet_grid(N+nC~missing) +
@@ -881,6 +983,11 @@ if(1){
     ggsave(filename="FigureS10_marginal_Power_singleContext.png",
            plot =  sim_res %>% filter(Tissues != "global" & scenario_nr %in% c(11:20) &
                                         Tissues %in% paste0("p.value_T",1:49)) %>%
+             mutate(missing = as.character(missing),
+                    missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                        missing == "OneK1K missing" ~ "5% missing",
+                                        TRUE ~ missing),
+                    missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
              mutate(parspace = questions[3], shared=factor(shared)) %>%
              droplevels() %>%
              mutate(effect=ifelse(
@@ -915,6 +1022,11 @@ if(1){
     ggsave(filename="FigureS11_marginal_Power_TwoContexts.png",
            plot =  sim_res %>% filter(Tissues != "global" & scenario_nr %in% c(21:30) &
                                         Tissues %in% paste0("p.value_T",1:49)) %>%
+             mutate(missing = as.character(missing),
+                    missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                        missing == "OneK1K missing" ~ "5% missing",
+                                        TRUE ~ missing),
+                    missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
              mutate(parspace = questions[3], shared=factor(shared)) %>%
              droplevels() %>%
              mutate(effect=ifelse(
@@ -951,6 +1063,11 @@ if(1){
     ggsave(filename="FigureS12_marginal_Power_ExtensiveHet.png",
            plot =  sim_res %>% filter(Tissues != "global" & scenario_nr %in% c(36:40) &
                                         Tissues %in% paste0("p.value_T",1:49)) %>%
+             mutate(missing = as.character(missing),
+                    missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                        missing == "OneK1K missing" ~ "5% missing",
+                                        TRUE ~ missing),
+                    missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
              mutate(parspace = questions[3], shared=factor(shared)) %>%
              droplevels() %>%
              ggplot(aes(x=w_corr, y = PD, color = method)) + 
@@ -984,6 +1101,11 @@ if(1){
                N=="#Individuals:698" & w_corr %in% c(0.8) & scenario_nr %in% c(11:20,36:40)) %>% 
       mutate(context = gsub("T", "", context)) %>% mutate(context = factor(context, levels=as.character(seq(1,49)))) %>% 
       mutate(w_corr = paste0("Within individual correlation:", w_corr)) %>% 
+      mutate(missing = as.character(missing),
+             missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                 missing == "OneK1K missing" ~ "5% missing",
+                                 TRUE ~ missing),
+             missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
       pivot_longer(cols = c(mean_effect, betas), 
                    names_to = "effect_type", 
                    values_to = "effect_size") %>%
@@ -1017,6 +1139,11 @@ if(1){
     data_s13_shared_specific = sim_res_bias %>% 
       filter(method == "FastGxC_shared_specific" & nC=="#Contexts:8" & 
                N=="#Individuals:698" & w_corr %in% c(0.8) & scenario_nr %in% c(6:10, 16:20, 36:40)) %>% 
+      mutate(missing = as.character(missing),
+             missing = case_when(missing == "GTEx missing" ~ "50% missing",
+                                 missing == "OneK1K missing" ~ "5% missing",
+                                 TRUE ~ missing),
+             missing = factor(missing, levels=c("Complete data", "5% missing", "50% missing"))) %>%
       mutate(context = gsub("T", "", context)) %>% mutate(context = factor(context, levels=c("shared", as.character(seq(1,49))))) %>% 
       mutate(w_corr = paste0("Within individual correlation:", w_corr)) %>% 
       pivot_longer(cols = c(mean_effect, betas), 
