@@ -2218,7 +2218,6 @@ if(1){
       strip.text.x = element_text(size = 20, face = "bold"),
       strip.text.y = element_blank(),
       legend.box = 'horizontal',
-      legend.position="top",
       #panel.grid.major = element_blank(),
       #panel.grid.minor = element_blank(),
       axis.line = element_line(colour = "black"),
@@ -2243,7 +2242,7 @@ if(1){
     ) + facet_grid(~cohort)
   
   ggsave(fastgxc_cxc_effects, 
-         file = "FigureS19_FastGxC_CxC_effectsize_comparison.pdf", height = 5, width = 10)
+         file = "FigureS19_FastGxC_CxC_effectsize_comparison.pdf", height = 10, width = 10)
 }
 
 
