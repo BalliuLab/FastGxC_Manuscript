@@ -37,6 +37,7 @@ library(mppa)
 library(WriteXLS)
 library(ggsankey)
 library(ggsankeyfier)
+library(data.table)
 
 setwd("./manuscript/Figures/")
 source(file = '../scripts/00_functions.R')
@@ -203,6 +204,7 @@ if(1){
       panel.border = element_blank(),
       axis.line = element_line(colour = "black")
     )
+  
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2193,6 +2195,58 @@ if(1){
   
 }
 
+## supplemental figure 19 showing correlation between FastGxC added and CxC effects
+if(1){
+  combined = fread("../Input_Files/Figure4_Correlation_Heatmap/FastGxC_added_CxC_effect_sizes.txt", sep = "\t")
+  label_df <- combined %>%
+    group_by(cohort) %>%
+    summarize(
+      # Calculate r for this specific group
+      r_val = cor(beta, beta_cxc, use = "complete.obs"), 
+      
+      # Create the label text
+      lab = paste0("Pearson r = ", round(r_val, 2))
+    ) %>%
+    # Add the coordinates for the label (Top-Right)
+    mutate(x = Inf, y = Inf)
+  
+  fastgxc_cxc_effects = ggplot(combined, aes(x = beta, y = beta_cxc)) + # Use full data, not sampled
+    geom_hex(bins = 100) +                 # <--- Replaces geom_point()
+    scale_fill_viridis_c() +               # <--- Optional: Better colors (requires viridis package or standard gradient)
+    theme_bw() +
+    theme(
+      strip.text.x = element_text(size = 20, face = "bold"),
+      strip.text.y = element_blank(),
+      legend.box = 'horizontal',
+      legend.position="top",
+      #panel.grid.major = element_blank(),
+      #panel.grid.minor = element_blank(),
+      axis.line = element_line(colour = "black"),
+      axis.title = element_text(size=20,color="black"),
+      axis.text = element_text(size=15,color="black"),
+      plot.title = element_text(hjust = 0.5,size=15),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.title=element_blank(),
+      legend.text=element_text(size=15))+
+    geom_abline(intercept = 0, slope = 1, color = "red") + 
+    xlab("FastGxC total effect size") + ylab("CxC effect size") +
+    
+    # Your existing label code (kept exactly the same)
+    geom_label_repel(
+      data = label_df,  # <--- Use the summary dataframe here
+      aes(x = x, y = y, label = lab),
+      point.padding = 3, 
+      size = 6, 
+      show.legend = FALSE, 
+      segment.alpha = 0, 
+      inherit.aes = FALSE # Keeps x/y clean, but 'cohort' is still used for faceting
+    ) + facet_grid(~cohort)
+  
+  ggsave(fastgxc_cxc_effects, 
+         file = "FigureS19_FastGxC_CxC_effectsize_comparison.pdf", height = 5, width = 10)
+}
+
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%% Figure 5 : Functional Characterization 
 #%%%%%%%%%%%%%%% of GTEx eQTLs (Enrichment Analysis)
@@ -2582,6 +2636,99 @@ if(1){
   }
   
   
+  ### plot constraint plot
+  if(1){
+    plot_data = fread("../Input_Files/Figure6_Enrichment/Enrichment.Tissue_Agnostic.pLI_genes.fisher_results.txt", sep = "\t")
+    # Colors for categories
+    category_colors <- c("Shared\nonly" = "#E74C3C", 
+                         "Specific\nonly" = "#3498DB", 
+                         "Shared+\nspecific" = "#27AE60", 
+                         "CxC" = "#9B59B6")
+    
+    # Mostafavi reference values
+    mostafavi_gwas <- 26
+    mostafavi_gwas_bg <- 21
+    mostafavi_eqtl <- 12
+    mostafavi_eqtl_bg <- 18
+    
+    # Create plot
+    p <- ggplot(plot_data, aes(x = category, y = proportion, fill = interaction(type, category))) +
+      geom_col(position = position_dodge(width = 0.8), width = 0.7, color = "black", size = 0.3) +
+      geom_hline(yintercept = mostafavi_gwas, linetype = "dashed", color = "orange", size = 0.8) +
+      geom_hline(yintercept = mostafavi_eqtl, linetype = "dashed", color = "gray50", size = 0.8) +
+      geom_hline(yintercept = mostafavi_gwas_bg, linetype = "dotted", color = "orange", size = 0.8) +
+      geom_hline(yintercept = mostafavi_eqtl_bg, linetype = "dotted", color = "gray50", size = 0.8) +
+      geom_text(data = all_results, 
+                aes(x = category, y = pmax(prop_egene, prop_bg) + 2, label = sig_label),
+                inherit.aes = FALSE, size = 4, fontface = "bold") +
+      facet_wrap(dataset~., scales = "free_x", ncol = 1) +
+      scale_fill_manual(values = c(
+        "Background.Shared\nonly" = "gray80",
+        "Background.Specific\nonly" = "gray80",
+        "Background.Shared+\nspecific" = "gray80",
+        "Background.CxC" = "gray80",
+        "eGenes.Shared\nonly" = "#E74C3C",
+        "eGenes.Specific\nonly" = "#3498DB",
+        "eGenes.Shared+\nspecific" = "#27AE60",
+        "eGenes.CxC" = "#9B59B6"
+      ), guide = "none") +
+      labs(y = "Proportion of high-pLI genes (%)", x = NULL) +
+      ylim(0, 35) +
+      theme_bw(base_size = 12) +
+      theme_bw() + 
+      theme(legend.title = element_text(size = 12),
+            legend.text = element_text(size=12),
+            axis.text.x = element_text(size = 14),
+            #axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 14),
+            axis.text.y = element_text(size=13),
+            axis.title = element_text(face = "bold", size=23),
+            strip.text = element_text(face = "bold", size = 20),
+            strip.background = element_rect(fill="white"))
+      #theme(
+      #  panel.grid.minor = element_blank(),
+      #  panel.grid.major.x = element_blank(),
+      #  strip.text = element_text(face = "bold", size = 12),
+      #  strip.background = element_blank(),
+      #  axis.text.x = element_text(size = 10),
+      #  axis.title.y = element_text(size = 11)
+      #)
+    
+    
+    legend_plot <- ggplot() +
+      # Dashed lines
+      annotate("segment", x = 3.5, xend = 5, y = 1, yend = 1,
+               linetype = "dashed", color = "orange", size = 0.8) +
+      annotate("segment", x = 3.5, xend = 5, y = 1.2, yend = 1.2, 
+               linetype = "dotted", color = "orange", size = 0.8) +
+      annotate("segment", x = 3.5, xend = 5, y = 2, yend = 2,
+               linetype = "dashed", color = "gray50", size = 0.8) +
+      annotate("segment", x = 3.5, xend = 5, y = 2.2, yend = 2.2,
+               linetype = "dotted", color = "gray50", size = 0.8) +
+      # Solid lines
+      annotate("segment", x = 7, xend = 7.5, y = 2, yend = 2,
+               color = "gray80", size = 3) +
+      annotate("segment", x = 7, xend = 7.5, y = 1, yend = 1,
+               color = "#E74C3C", size = 3) +
+      # Labels
+      annotate("text", x = 5.1, y = 2, label = "GWAS", hjust = 0, size = 4.5) +
+      #annotate("text", x = 0.6, y = 2, label = "Mostafavi GWAS bg (21%)", hjust = 0, size = 4.5)+
+      annotate("text", x = 5.1, y = 1.25, label = "eQTL", hjust = 0, size = 4.5) +
+      #annotate("text", x = 5.1, y = 2, label = "Mostafavi eQTL bg (18%)", hjust = 0, size = 4.5) +
+      annotate("text", x = 7.6, y = 2, label = "Background", hjust = 0, size = 4.5) +
+      annotate("text", x = 7.6, y = 1, label = "eGenes", hjust = 0, size = 4.5) +
+      xlim(0, 11) + ylim(0.5, 2.5) +
+      theme_void()
+    
+    # Combine with your main plot
+    final_pli_plot <- plot_grid(
+      legend_plot,
+      p,
+      ncol = 1,
+      rel_heights = c(0.08, 1)
+    )
+  }
+  
+  
   ### manuscript claims: mcnemar test
   
   mat = gtex_atac_dat %>%
@@ -2614,23 +2761,47 @@ if(1){
   # Fig6: final, merge panels together
   if(1){
     
-    ## no figure 6C and combined figure B
+    
+    #### try to make figure 6A and constraint plot next to each other:
     Fig6_combined = plot_grid(
-      fig6A,
+      plot_grid(
+        fig6A, 
+        NULL,               # This acts as a blank spacer
+        final_pli_plot,
+        ncol = 3,           # Increased to 3 columns to account for the spacer
+        rel_widths = c(1.8, 0.05, 1), # Adjust the 0.1 to increase/decrease the gap
+        labels = c("A", "", "B"),    # Leave the spacer label blank
+        label_size = 30
+      ),
       plot_grid(fig6B_combined,
                 ncol = 1,
                 rel_heights = c(3.25),
-                labels = c("B"),
+                labels = c("C"),
                 label_size = 30),
       ncol = 1,
       rel_heights = c(1.5, 2.5),
-      labels = c("A",""),
+      labels = c("", ""),
       label_size = 30
     )
     
+    ## old figure 6C and combined figure B
+    if(0){
+      Fig6_combined = plot_grid(
+        fig6A,
+        plot_grid(fig6B_combined,
+                  ncol = 1,
+                  rel_heights = c(3.25),
+                  labels = c("B"),
+                  label_size = 30),
+        ncol = 1,
+        rel_heights = c(1.5, 2.5),
+        labels = c("A",""),
+        label_size = 30
+      )
+    }
     
     ggsave(plot = Fig6_combined,
-           filename = 'Fig05_EnrichFuncAnnot_combined.pdf',
+           filename = 'Fig05_EnrichFuncAnnot_combined_pLI.pdf',
            dpi = 300,
            height = 22, width = 20,
            limitsize = F)
