@@ -1129,6 +1129,8 @@ if(1){
   # Sup Figure S12: Run time for 1000 individuals and runtime for single cell parameters
   if(1){
     n_indi = 1000
+    d=0.05
+    pcs=4
     
     ### get projected results for n_tests = 200e6
     n_tested_to_project = 200e6
@@ -1199,7 +1201,6 @@ if(1){
                                     newdata = data.frame(n_tests = c(n_tested_to_project)))) %>% 
       mutate(n_tests=n_tested_to_project)  %>% dplyr::select(model,n_tests,avg_days)
     
-    
     pd=position_dodge(0.1)
     runtime_sc = plot = run_time_sc %>% 
       mutate(nC = paste0("#Contexts:", n_tissues),
@@ -1259,7 +1260,7 @@ if(1){
       rel_heights = c(0.05, 1), 
       ncol = 1)
     
-    ggsave(plot = Supp_fig_14, filename="CG_Reviews/FigureS14_runtime.pdf", width = 10, height = 8)
+    ggsave(plot = Supp_fig_14, filename="FigureS14_runtime.pdf", width = 10, height = 8)
   }
   
 }
