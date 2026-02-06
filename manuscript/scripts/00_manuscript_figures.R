@@ -2242,7 +2242,7 @@ if(1){
     ) + facet_grid(~cohort)
   
   ggsave(fastgxc_cxc_effects, 
-         file = "FigureS19_FastGxC_CxC_effectsize_comparison.pdf", height = 10, width = 10)
+         file = "FigureS19_FastGxC_CxC_effectsize_comparison.pdf", height = 6, width = 10)
 }
 
 
@@ -2657,8 +2657,8 @@ if(1){
       geom_hline(yintercept = mostafavi_eqtl, linetype = "dashed", color = "gray50", size = 0.8) +
       geom_hline(yintercept = mostafavi_gwas_bg, linetype = "dotted", color = "orange", size = 0.8) +
       geom_hline(yintercept = mostafavi_eqtl_bg, linetype = "dotted", color = "gray50", size = 0.8) +
-      geom_text(data = all_results, 
-                aes(x = category, y = pmax(prop_egene, prop_bg) + 2, label = sig_label),
+      geom_text(data = plot_data %>% pivot_wider(names_from = type, values_from = proportion), 
+                aes(x = category, y = pmax(eGenes, Background) + 2, label = sig_label),
                 inherit.aes = FALSE, size = 4, fontface = "bold") +
       facet_wrap(dataset~., scales = "free_x", ncol = 1) +
       scale_fill_manual(values = c(
@@ -3007,7 +3007,7 @@ if(1){
                                plot_eqtl_example(plot_gene = "GSTT2", plot_snp = "rs369691", y_axis_tissue_lab = F),
                                nrow=1,
                                rel_widths = c(1, 0.8, 0.8),
-                               labels = c("D","E","F"),
+                               labels = c("A","B","C"),
                                label_size = 25)
   
   fig_supp_total = plot_grid(
@@ -3027,10 +3027,10 @@ if(1){
          dpi = 300,
          height = 10, width = 18, limitsize = F)
   
-  ggsave(plot = fig_supp_total,
-         filename = 'FigureS19_GTEx_eQTL_Examples.pdf',
-         dpi = 300,
-         height = 20, width = 18, limitsize = F)
+  #ggsave(plot = fig_supp_total,
+  #       filename = 'FigureS19_GTEx_eQTL_Examples.pdf',
+  #       dpi = 300,
+  #       height = 20, width = 18, limitsize = F)
   
 }
 
