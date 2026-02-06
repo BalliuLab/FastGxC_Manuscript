@@ -2639,93 +2639,132 @@ if(1){
   ### plot constraint plot
   if(1){
     plot_data = fread("../Input_Files/Figure6_Enrichment/Enrichment.Tissue_Agnostic.pLI_genes.fisher_results.txt", sep = "\t")
-    # Colors for categories
-    category_colors <- c("Shared\nonly" = "#E74C3C", 
-                         "Specific\nonly" = "#3498DB", 
-                         "Shared+\nspecific" = "#27AE60", 
-                         "CxC" = "#9B59B6")
     
-    # Mostafavi reference values
-    mostafavi_gwas <- 26
-    mostafavi_gwas_bg <- 21
-    mostafavi_eqtl <- 12
-    mostafavi_eqtl_bg <- 18
-    
-    # Create plot
-    p <- ggplot(plot_data, aes(x = category, y = proportion, fill = interaction(type, category))) +
-      geom_col(position = position_dodge(width = 0.8), width = 0.7, color = "black", size = 0.3) +
-      geom_hline(yintercept = mostafavi_gwas, linetype = "dashed", color = "orange", size = 0.8) +
-      geom_hline(yintercept = mostafavi_eqtl, linetype = "dashed", color = "gray50", size = 0.8) +
-      geom_hline(yintercept = mostafavi_gwas_bg, linetype = "dotted", color = "orange", size = 0.8) +
-      geom_hline(yintercept = mostafavi_eqtl_bg, linetype = "dotted", color = "gray50", size = 0.8) +
-      geom_text(data = plot_data %>% pivot_wider(names_from = type, values_from = proportion), 
-                aes(x = category, y = pmax(eGenes, Background) + 2, label = sig_label),
-                inherit.aes = FALSE, size = 4, fontface = "bold") +
-      facet_wrap(dataset~., scales = "free_x", ncol = 1) +
-      scale_fill_manual(values = c(
-        "Background.Shared\nonly" = "gray80",
-        "Background.Specific\nonly" = "gray80",
-        "Background.Shared+\nspecific" = "gray80",
-        "Background.CxC" = "gray80",
-        "eGenes.Shared\nonly" = "#E74C3C",
-        "eGenes.Specific\nonly" = "#3498DB",
-        "eGenes.Shared+\nspecific" = "#27AE60",
-        "eGenes.CxC" = "#9B59B6"
-      ), guide = "none") +
-      labs(y = "Proportion of high-pLI genes (%)", x = NULL) +
-      ylim(0, 35) +
-      theme_bw(base_size = 12) +
-      theme_bw() + 
-      theme(legend.title = element_text(size = 12),
-            legend.text = element_text(size=12),
-            axis.text.x = element_text(size = 14),
-            #axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 14),
-            axis.text.y = element_text(size=13),
-            axis.title = element_text(face = "bold", size=23),
-            strip.text = element_text(face = "bold", size = 20),
-            strip.background = element_rect(fill="white"))
-      #theme(
-      #  panel.grid.minor = element_blank(),
-      #  panel.grid.major.x = element_blank(),
-      #  strip.text = element_text(face = "bold", size = 12),
-      #  strip.background = element_blank(),
-      #  axis.text.x = element_text(size = 10),
-      #  axis.title.y = element_text(size = 11)
-      #)
-    
-    
-    legend_plot <- ggplot() +
-      # Dashed lines
-      annotate("segment", x = 3.5, xend = 5, y = 1, yend = 1,
-               linetype = "dashed", color = "orange", size = 0.8) +
-      annotate("segment", x = 3.5, xend = 5, y = 1.2, yend = 1.2, 
-               linetype = "dotted", color = "orange", size = 0.8) +
-      annotate("segment", x = 3.5, xend = 5, y = 2, yend = 2,
-               linetype = "dashed", color = "gray50", size = 0.8) +
-      annotate("segment", x = 3.5, xend = 5, y = 2.2, yend = 2.2,
-               linetype = "dotted", color = "gray50", size = 0.8) +
-      # Solid lines
-      annotate("segment", x = 7, xend = 7.5, y = 2, yend = 2,
-               color = "gray80", size = 3) +
-      annotate("segment", x = 7, xend = 7.5, y = 1, yend = 1,
-               color = "#E74C3C", size = 3) +
-      # Labels
-      annotate("text", x = 5.1, y = 2, label = "GWAS", hjust = 0, size = 4.5) +
-      #annotate("text", x = 0.6, y = 2, label = "Mostafavi GWAS bg (21%)", hjust = 0, size = 4.5)+
-      annotate("text", x = 5.1, y = 1.25, label = "eQTL", hjust = 0, size = 4.5) +
-      #annotate("text", x = 5.1, y = 2, label = "Mostafavi eQTL bg (18%)", hjust = 0, size = 4.5) +
-      annotate("text", x = 7.6, y = 2, label = "Background", hjust = 0, size = 4.5) +
-      annotate("text", x = 7.6, y = 1, label = "eGenes", hjust = 0, size = 4.5) +
-      xlim(0, 11) + ylim(0.5, 2.5) +
-      theme_void()
-    
-    # Combine with your main plot
-    final_pli_plot <- plot_grid(
-      legend_plot,
-      p,
-      ncol = 1,
-      rel_heights = c(0.08, 1)
+    # Updated colors to match left figure
+    # Blues for FastGxC categories (shades matching the blue in left plot)
+    # Reds/salmons for CxC and eQTL (shades matching the red in left plot)
+    category_colors <- c(
+      "Shared\nonly" = "#1B4F72",
+      "Specific\nonly" = "#3498DB",
+      "Shared+\nspecific" = "#2874A6",
+      "CxC" = "#CD6155",
+      "GWAS" = "orange",
+      "Bulk eGenes" = "#E6B0AA"
     )
+    
+    # Create Mostafavi reference data with all columns
+    datasets <- unique(plot_data$dataset)
+    
+    mostafavi_data <- data.table(
+      dataset = rep(datasets, each = 4),
+      category = rep(c("GWAS", "GWAS", "Bulk eGenes", "Bulk eGenes"), times = length(datasets)),
+      pvalue = NA_real_,
+      sig_label = "",
+      p_adj = NA_real_,
+      type = rep(c("eGenes", "Background", "eGenes", "Background"), times = length(datasets)),
+      proportion = rep(c(26, 21, 12, 18), times = length(datasets))
+    )
+    
+    # Combine data
+    combined_data <- rbind(plot_data, mostafavi_data)
+    
+    # Set factor levels to control order
+    combined_data$category <- factor(combined_data$category, 
+                                     levels = c("GWAS", "Bulk eGenes", "CxC", 
+                                                "Shared\nonly", "Shared+\nspecific", 
+                                                "Specific\nonly"))
+    
+    # Split data by dataset
+    gtex_data <- combined_data[dataset == "GTEx Tissues"]
+    pbmc_data <- combined_data[dataset == "PBMC Cell Types"]
+    
+    # Common theme elements
+    common_theme <- theme_bw(base_size = 12) +
+      theme(legend.position = "none",
+            axis.title.x = element_blank(),
+            axis.text.y = element_text(size = 13),
+            panel.grid.minor = element_blank(),
+            panel.grid.major.x = element_blank(),
+            plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+            plot.margin = margin(t = 5, r = 10, b = 5, l = 10))
+    
+    # Function to create plot
+    make_plot <- function(data, title, show_x_axis = FALSE, show_y_title = FALSE, show_reference_label = FALSE) {
+      bg_data <- data[type == "Background"]
+      egene_data <- data[type == "eGenes"]
+      
+      p <- ggplot() +
+        geom_vline(xintercept = 2.5, linetype = "dashed", color = "gray70", size = 0.5) +
+        geom_col(data = bg_data, 
+                 aes(x = category, y = proportion), 
+                 fill = NA, color = "black", size = 0.5, width = 0.7) +
+        geom_col(data = egene_data, 
+                 aes(x = category, y = proportion, fill = category), 
+                 alpha = 0.7, color = "black", size = 0.3, width = 0.7) +
+        geom_text(data = egene_data[sig_label != ""], 
+                  aes(x = category, y = proportion + 1.5, label = sig_label),
+                  size = 4, fontface = "bold") +
+        scale_fill_manual(values = c(
+          "Shared\nonly" = "#1B4F72",
+          "Specific\nonly" = "#3498DB",
+          "Shared+\nspecific" = "#2874A6",
+          "CxC" = "#CD6155",
+          "GWAS" = "orange",
+          "Bulk eGenes" = "#E6B0AA"
+        )) +
+        labs(title = title) +
+        coord_cartesian(ylim = c(0, 32), clip = "off") +
+        common_theme
+      
+      # Add reference label to the right of the vertical line
+      if (show_reference_label) {
+        p <- p + annotate("text", x = 1.5, y = 31, label = "Mostafavi\net al.", 
+                          size = 3.5, color = "gray40", fontface = "italic")
+      }
+      
+      if (show_x_axis) {
+        p <- p + theme(axis.text.x = element_text(size = 12, angle = 45, hjust = 1))
+      } else {
+        p <- p + theme(axis.text.x = element_blank(),
+                       axis.ticks.x = element_blank())
+      }
+      
+      if (show_y_title) {
+        p <- p + labs(y = "Proportion of highly constrained genes")
+      } else {
+        p <- p + theme(axis.title.y = element_blank())
+      }
+      
+      return(p)
+    }
+    
+    # Create individual plots (only show reference label on top plot)
+    p_gtex <- make_plot(gtex_data, "GTEx Tissues", show_x_axis = FALSE, show_y_title = FALSE, show_reference_label = TRUE)
+    p_pbmc <- make_plot(pbmc_data, "PBMC Cell Types", show_x_axis = TRUE, show_y_title = FALSE, show_reference_label = TRUE)
+    
+    # Combine plots
+    plots_combined <- plot_grid(
+      p_gtex,
+      p_pbmc,
+      ncol = 1,
+      rel_heights = c(1, 1.15),
+      align = "v",
+      axis = "lr"
+    )
+    
+    # Create shared y-axis label
+    y_label <- ggdraw() + 
+      draw_label("Proportion of highly constrained genes (%)", 
+                 angle = 90, fontface = "bold", size = 16)
+    
+    # Combine y-axis label with plots
+    final_pli_plot <- plot_grid(
+      y_label,
+      plots_combined,
+      ncol = 2,
+      rel_widths = c(0.05, 1)
+    )
+    
   }
   
   
