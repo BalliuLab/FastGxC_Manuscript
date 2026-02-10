@@ -21,7 +21,6 @@ suppressPackageStartupMessages(library(reshape2))
 # Location of data files.
 
 exp_files=list.files(path = input.dir, pattern = paste0(".", pseudobulk, "_normalized_expression.txt"))#,full.names = T)
-#context_names=gsub(pattern =paste(input.dir,"/","\\.",cohort,".mean_normalized_expression.txt",sep = "|"),replacement = "",x = exp_files)
 context = strsplit(exp_files, "\\.")[[i]][1]
 exp_files = paste0(input.dir, exp_files)
 

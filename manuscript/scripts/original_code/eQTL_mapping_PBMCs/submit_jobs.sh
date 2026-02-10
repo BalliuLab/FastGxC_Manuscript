@@ -18,7 +18,6 @@ JobType=$1
 #10: Run TreeQTL in GTEx
 
 
-### LENA: 
 # Create genes_by_context matrix per cohort
 
 # Residualized expression files for covariates

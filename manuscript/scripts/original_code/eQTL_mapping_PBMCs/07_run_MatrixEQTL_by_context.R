@@ -77,7 +77,6 @@ errorCovariance = numeric();
 cisDist = 1e6;
 
 ## Load gene expression data
-#genes_by_context=data.frame(fread(input = paste0(work_dir, "/data/GTEx_v8/misc/GTEx_v8_Gene_by_Context_Expression.txt")), row.names = 1)
 expression_mat=as.matrix(data.frame(fread(input = expression_file_name, header = T),row.names = 1, check.names = F))
 expression_mat=expression_mat[!apply(is.na(expression_mat), 1, all),] # Filter genes with NA across all samples
 expression_mat=expression_mat[,!apply(is.na(expression_mat), 2, all)] # Filter samples with NA across all genes
