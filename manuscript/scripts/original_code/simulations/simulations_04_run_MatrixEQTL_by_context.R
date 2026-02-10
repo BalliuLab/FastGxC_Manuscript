@@ -1,11 +1,6 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#%%%%%%%%%%%%%%% Brunilda Balliu
-#%%%%%%%%%%%%%%% December 8th 2022
 #%%%%%%%%%%%%%%% FastGxC / CxC analysis of simulated data for different scenarios
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-## gene-snpE104 8 - 0.0225807152
-## scenario 15 - betaT49 - -0.0129920855 (causing bias in that)
 
 # Libraries
 library(lme4)
@@ -29,14 +24,6 @@ N=as.numeric(args[4])
 nT=as.numeric(args[5])
 I=as.numeric(args[6])
 method=args[7]
-
-# i=11
-# work_dir="/u/project/bballiu/bballiu/FastGxC/"
-# missing_data=1
-# N=698
-# nT=49
-# I = 1e03
-# method = "CxC"
 
 print(paste("Started", method, "analysis of simulated data"))
 

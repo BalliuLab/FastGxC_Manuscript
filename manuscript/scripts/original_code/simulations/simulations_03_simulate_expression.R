@@ -1,6 +1,4 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#%%%%%%%%%%%%%%% Brunilda Balliu
-#%%%%%%%%%%%%%%% December 8th 2022
 #%%%%%%%%%%%%%%% Simulate data for different scenarios
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -24,13 +22,6 @@ N = as.numeric(args[3])
 nT=as.numeric(args[4])
 i=as.numeric(args[5])
  
-
-# work_dir="/u/home/b/bballiu/FastGxC"
-# scratch_work_dir="/u/scratch/b/bballiu/FastGxC/"
-# I=1000
-# N = 100
-# nT=5
-# i=1
 
 data_dir=paste0(scratch_work_dir,"/simulated_data/")
 source(file = paste0(work_dir,'/scripts/00_functions.R'))
