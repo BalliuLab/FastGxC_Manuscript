@@ -15,7 +15,11 @@ JobType=$1
 # 5: Run MatrixEQTL per tissue 
 # 8: Get number of SNPs tested per gene and genes tested per SNP in each tissue in GTEx
 # 9: Filter MatrixEQTL results in for p-value <= threshold
-#10: Run TreeQTL in GTEx
+#10: Run TreeQTL 
+#11: prepare metasoft files
+# 12: Run metasoft 
+# 13: Format metasoft files for treeQTl 
+# 14 Run treeQTL on metasoft output 
 
 
 # Create genes_by_context matrix per cohort
@@ -287,16 +291,3 @@ do
 done
 fi
 
-
-## format for metasoft for GTEx_v8
-if ([ $JobType -eq 15 ]); then
-    input_dir="/u/project/bballiu/bballiu/FastGxC/results/eQTL_mapping/MatrixEQTL/"
-    exp_scale=1
-    outdir="/u/project/bballiu/bballiu/FastGxC/results/eQTL_mapping/Metasoft_GTEx/"
-    functions_file="/u/project/bballiu/bballiu/FastGxC/scripts/eQTL_mapping/00_functions.R"
-    geneloc_file="/u/project/bballiu/bballiu/FastGxC/data/GTEx_v8/MatrixEQTL_input/GTEx_v8_geneloc.txt"
-    file="${work_dir}/scripts/eQTL_mapping/15_GTEx_v8_format_for_Metasoft.R"
-    for cur_chrom in $(seq 1 22); do
-        qsub -N format_metasoft_GTEx.${cur_chrom} -o ${work_dir}/logfiles/format_Metasoft_GTEx.${cur_chrom}.o -e ${work_dir}/logfiles/format_Metasoft_GTEx.${cur_chrom}.e -l h_data=80G,h_rt=48:00:00,highp $work_dir/scripts/eQTL_mapping/submit_job_lena.sh $JobType $file $input_dir $exp_scale $outdir $functions_file $geneloc_file $cur_chrom
-    done
-fi
