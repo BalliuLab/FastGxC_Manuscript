@@ -22,7 +22,7 @@ if ([ $JobType -eq 1 ]); then
     R --vanilla --slave -f $my_script --args $i $cohort $work_dir
 fi
 
-# Merge GTEx expression files
+# Merge expression files
 if ([ $JobType -eq 2 ]); then
     cohort=$4
     my_script=$work_dir/scripts/eQTL_mapping/02_merge_expression_files.R ${work_dir} $cohort

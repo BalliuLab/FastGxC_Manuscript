@@ -8,57 +8,6 @@
 #%%%%%%%%%%%%%%%%%% Functions related to the decomposition
 #%%%%%%%%%%%%%%%%%% 
 
-### BRUNA FIX THIS!
-decompose_sim=function(expression, res_dir, scenario, prefix , genos){
-  # shared_exp_file_name=paste0(res_dir,'scenario_',scenario, prefix, '_shared_expression.txt')
-  # spec_exp_t_file_name=paste0(res_dir,'scenario_',scenario, prefix, "_",tissues[j],'_specific_expression.txt')
-  
-  design = expression$id
-  rep.measures = factor(design)
-  
-  if (any(summary(as.factor(rep.measures)) == 1)) 
-    stop("A multilevel analysis can not be performed when at least one some sample is not repeated.")
-  
-  X = scale(x = as.matrix(expression[,-c(1:2)]), center = T, scale = F)
-  
-  indiv.names = rownames(X)
-  rownames(X) = as.character(rep.measures)
-  
-  X.mean.indiv = matrix(apply(X, 2, tapply, rep.measures, mean, na.rm = TRUE), 
-                         nrow = length(unique(rep.measures)), 
-                         ncol = dim(X)[2], 
-                         dimnames = list(levels(as.factor(rep.measures)), colnames(X)))
-  Xb = X.mean.indiv[as.character(rep.measures), ]
-  Xw = X - Xb
-  dimnames(Xw) = list(indiv.names, colnames(X))
-  
-  print("Saving shared expression matrix")
-  shared_exp_file_name=paste0(res_dir,'scenario_',scenario, prefix, '_shared_expression.txt')
-  fwrite(x = data.table(t(X.mean.indiv[colnames(genos),]),keep.rownames = T) %>% {setnames(., old = "rn", new = "geneID")[]},  
-         file = shared_exp_file_name, quote = F, row.names = F, 
-         col.names = T, append = F, sep = '\t')
-  
-  
-  tissues = unique(expression$Tissue)
-  
-  for(j in 1:length(tissues)){
-
-    print(paste0("Saving (specific) expression matrix for context: ",tissues[j]))
-    
-
-    wexp_t = Xw[grep(pattern = tissues[j], rownames(Xw)),]
-    rownames(wexp_t)=gsub(pattern = paste0(" - ",tissues[j]), replacement = "", x = rownames(wexp_t))
-    
-    spec_exp_t_file_name=paste0(res_dir,'scenario_',scenario, prefix, "_",tissues[j],'_specific_expression.txt')
-    
-    fwrite(x = data.table(t(wexp_t[colnames(genos),]),keep.rownames = T) %>% {setnames(., old = "rn", new = "geneID")[]}, 
-           file = spec_exp_t_file_name,quote = F, row.names = F, 
-           col.names = T, append = F, sep = '\t')
-    
-     }
-}
-
-
 decompose=function(expression, shared_exp_file_name, spec_exp_file_name, genos){
   
   design = factor(expression$id)
@@ -101,35 +50,6 @@ decompose=function(expression, shared_exp_file_name, spec_exp_file_name, genos){
     
   }
   
-}
-
-
-#%%%%%%%%%%%%%%%%%% 
-#%%%%%%%%%%%%%%%%%% Functions related to simulation study 
-#%%%%%%%%%%%%%%%%%% 
-
-simulate_expression_data=function(I, N, nT, betas, v_e, w_corr, genos){
-  
-  # I: number of iterations
-  # N: number of samples
-  # nT: number of contexts
-  # betas: genotypic effect in each context
-  # v_e: variance of expression error
-  # w_corr : correlation of contexts within an individual
-  
-  # Assume all contexts have correlation of w_corr within people
-  sigma = matrix(w_corr,nrow=nT,ncol=nT)
-  diag(sigma) = v_e
-  
-  betaxG = genos[rep(1:N,times = nT),] * matrix(rep(betas,each = N))[,rep(1,I)]
-  errors = sapply(1:I, function(a) c(rmvnorm(N, rep(0,nT), sigma)))
-  expression = data.frame(id = paste0("ind", rep(1:N,times = nT)), 
-                          Tissue = paste0(paste0("T",rep(1:nT, each=N))), 
-                          betaxG + errors, 
-                          row.names = NULL)
-  rownames(expression) = paste(expression$id, expression$Tissue, sep = " - ")
-  colnames(expression)[-c(1:2)] = paste0("E",1:I)
-  return(expression)
 }
 
 
