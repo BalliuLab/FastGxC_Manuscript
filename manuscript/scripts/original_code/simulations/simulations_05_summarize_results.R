@@ -1,13 +1,7 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%% Brunilda Balliu
-#%%%%%%%%%%%%%%% December 8th 2022
 #%%%%%%%%%%%%%%% Summarize simulation results
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# qrsh -l h_data=32G,h_rt=12:00:00
-# echo "Loading dependencies"
-# . /u/local/Modules/default/init/modules.sh
-# module load R/4.2.2-BIO
-# R
 
 rm(list=ls())
 
